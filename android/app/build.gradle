@@ -37,7 +37,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "br.com.orgalive"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 31
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -45,6 +45,7 @@ android {
     }
 
     // auto assinar o apk ao compilar
+    /*
     signingConfigs {
         release {
             keyAlias keystoreProperties['keyAlias']
@@ -53,6 +54,7 @@ android {
             storePassword keystoreProperties['storePassword']
         }
     }
+    */
 
     buildTypes {
         release {

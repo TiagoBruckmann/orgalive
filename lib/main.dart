@@ -13,14 +13,18 @@ import 'package:orgalive/Screens/home.dart';
 
 final ThemeData defaultTheme = ThemeData(
   primaryColor: OrgaliveColors.greyDefault,
-  secondaryHeaderColor: OrgaliveColors.yellowDefault,
+  secondaryHeaderColor: OrgaliveColors.greenDefault,
 
   appBarTheme: const AppBarTheme(
     systemOverlayStyle: SystemUiOverlayStyle(
-      statusBarBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
     ),
     backgroundColor: OrgaliveColors.greyDefault,
   ),
+
+  scaffoldBackgroundColor: OrgaliveColors.greyBackground,
+
+
 );
 
 void main() async {
@@ -33,7 +37,7 @@ void main() async {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: OrgaliveColors.greyDefault,
-      statusBarIconBrightness: Brightness.dark,
+      statusBarIconBrightness: Brightness.light,
     ),
   );
 

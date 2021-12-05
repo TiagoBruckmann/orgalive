@@ -13,6 +13,9 @@ import 'package:orgalive/Screens/reports/Reports.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
+// import dos modelos
+import 'package:orgalive/Model/Core/orgalive_colors.dart';
+
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
@@ -29,7 +32,7 @@ class _HomeState extends State<Home> {
     const Releases(),
     const FutureReleases(),
     const Reports(),
-    const SpendingLimits()
+    const SpendingLimits(),
   ];
 
   @override
@@ -45,7 +48,7 @@ class _HomeState extends State<Home> {
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: OrgaliveColors.greyDefault,
           boxShadow: [
             BoxShadow(
               blurRadius: 20,
@@ -60,46 +63,50 @@ class _HomeState extends State<Home> {
               vertical: 8,
             ),
             child: GNav(
-              rippleColor: Colors.grey[300]!,
-              hoverColor: Colors.grey[100]!,
-              gap: 8,
-              activeColor: Colors.black,
+              rippleColor: OrgaliveColors.greyDefault,
+              hoverColor: OrgaliveColors.greyDefault,
+              gap: 4,
               iconSize: 24,
               padding: const EdgeInsets.symmetric(
                 horizontal: 20,
                 vertical: 12,
               ),
               duration: const Duration(milliseconds: 600),
-              tabBackgroundColor: Colors.grey[100]!,
+              tabBackgroundColor: OrgaliveColors.greyDefault,
               tabs: [
 
                 // dashboard
                 GButton(
-                  iconActiveColor: Theme.of(context).primaryColor,
+                  iconActiveColor: Theme.of(context).secondaryHeaderColor,
+                  iconColor: OrgaliveColors.silver,
                   icon: Icons.home,
                 ),
 
                 // lancamentos futuros
                 GButton(
-                  iconActiveColor: Theme.of(context).primaryColor,
+                  iconActiveColor: Theme.of(context).secondaryHeaderColor,
+                  iconColor: OrgaliveColors.silver,
                   icon: FontAwesomeIcons.exchangeAlt,
                 ),
 
                 // lancamentos
                 GButton(
-                  iconActiveColor: Theme.of(context).primaryColor,
+                  iconActiveColor: Theme.of(context).secondaryHeaderColor,
+                  iconColor: OrgaliveColors.silver,
                   icon: FontAwesomeIcons.plus,
                 ),
 
                 // relatorios
                 GButton(
-                  iconActiveColor: Theme.of(context).primaryColor,
+                  iconActiveColor: Theme.of(context).secondaryHeaderColor,
+                  iconColor: OrgaliveColors.silver,
                   icon: Icons.receipt_rounded,
                 ),
 
                 // limite de gastos
                 GButton(
-                  iconActiveColor: Theme.of(context).primaryColor,
+                  iconActiveColor: Theme.of(context).secondaryHeaderColor,
+                    iconColor: OrgaliveColors.silver,
                   icon: Icons.track_changes_outlined
                 ),
               ],

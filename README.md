@@ -95,9 +95,9 @@ flutter doctor
 ### :gear: Criar chave do app
 
 ```sh
-keytool -genkey -v -keystore c:\Users\tiago\upload-keystore.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+keytool -genkey -v -keystore D:\AndroidStudioProjects\orgalive\upload-keystore.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload
 
-Senha: TcholaOrgaliveDev2021
+Senha: sua_senha
 Nome: Tiago Bruckmann
 organização: Orgalive
 Nome da empresa: Orgalive
