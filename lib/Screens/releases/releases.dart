@@ -8,7 +8,7 @@ import 'package:calendar_timeline/calendar_timeline.dart';
 import 'package:orgalive/Model/Core/orgalive_colors.dart';
 
 // import das telas
-import 'package:orgalive/Screens/Releases/widgets/card_date_widget.dart';
+import 'package:orgalive/Screens/releases/widgets/card_date_widget.dart';
 
 class Releases extends StatefulWidget {
   const Releases({Key? key}) : super(key: key);
@@ -18,7 +18,6 @@ class Releases extends StatefulWidget {
 }
 
 class _ReleasesState extends State<Releases> {
-
   // variaveis da tela
   final DateTime _currentYear = DateTime.now();
 
@@ -28,11 +27,9 @@ class _ReleasesState extends State<Releases> {
       appBar: AppBar(
         title: const Text("Lançamentos"),
       ),
-
       body: SingleChildScrollView(
         child: Column(
           children: [
-
             CalendarTimeline(
               initialDate: _currentYear,
               firstDate: DateTime(2021, 12, 06),
@@ -48,7 +45,9 @@ class _ReleasesState extends State<Releases> {
             ),
 
             // dias de lançamento de valores
-            const CardDateWidget( title: "05 de Dezembro", ),
+            const CardDateWidget(
+              title: "05 de Dezembro",
+            ),
 
             // lista dos bagulho
             ListTile(
@@ -64,7 +63,6 @@ class _ReleasesState extends State<Releases> {
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
-
                   Text(
                     "Salário RFS",
                     style: TextStyle(
@@ -73,7 +71,6 @@ class _ReleasesState extends State<Releases> {
                       fontSize: 18,
                     ),
                   ),
-
                   Text(
                     "R\$ 1.724,00",
                     style: TextStyle(
@@ -82,13 +79,11 @@ class _ReleasesState extends State<Releases> {
                       fontSize: 18,
                     ),
                   ),
-
                 ],
               ),
               subtitle: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
-
                   Text(
                     "Conta inicial",
                     style: TextStyle(
@@ -97,7 +92,6 @@ class _ReleasesState extends State<Releases> {
                       fontSize: 15,
                     ),
                   ),
-
                   Text(
                     "Não recebido",
                     style: TextStyle(
@@ -106,13 +100,14 @@ class _ReleasesState extends State<Releases> {
                       fontSize: 15,
                     ),
                   ),
-
                 ],
               ),
             ),
 
             // dias de lançamento de valores
-            const CardDateWidget( title: "06 de Dezembro", ),
+            const CardDateWidget(
+              title: "06 de Dezembro",
+            ),
 
             // lista dos bagulho
             ListTile(
@@ -128,7 +123,6 @@ class _ReleasesState extends State<Releases> {
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
-
                   Text(
                     "Contas de casa",
                     style: TextStyle(
@@ -137,7 +131,6 @@ class _ReleasesState extends State<Releases> {
                       fontSize: 18,
                     ),
                   ),
-
                   Text(
                     "- R\$ 300,00",
                     style: TextStyle(
@@ -146,13 +139,11 @@ class _ReleasesState extends State<Releases> {
                       fontSize: 18,
                     ),
                   ),
-
                 ],
               ),
               subtitle: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
-
                   Text(
                     "Conta inicial",
                     style: TextStyle(
@@ -161,7 +152,6 @@ class _ReleasesState extends State<Releases> {
                       fontSize: 15,
                     ),
                   ),
-
                   Text(
                     "pago",
                     style: TextStyle(
@@ -170,11 +160,9 @@ class _ReleasesState extends State<Releases> {
                       fontSize: 15,
                     ),
                   ),
-
                 ],
               ),
             ),
-
           ],
         ),
       ),

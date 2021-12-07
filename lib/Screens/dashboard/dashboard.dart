@@ -216,24 +216,27 @@ class _DashboardState extends State<Dashboard> {
                       ),
                     ),
 
-                    Padding(
-                      padding: const EdgeInsets.only( top: 10, bottom: 20 ),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          primary: OrgaliveColors.greenDefault,
-                          padding: const EdgeInsets.fromLTRB(70, 10, 70, 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width - 65,
+                      child: Padding(
+                        padding: const EdgeInsets.only( top: 10, bottom: 20 ),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            primary: OrgaliveColors.greenDefault,
+                            // padding: const EdgeInsets.fromLTRB(70, 10, 70, 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
-                        ),
-                        onPressed: () {
-                          _goToSettingAccounts();
-                        },
-                        child: const Text(
-                          "Gerenciar contas",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
+                          onPressed: () {
+                            _goToSettingAccounts();
+                          },
+                          child: const Text(
+                            "Gerenciar contas",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                       ),

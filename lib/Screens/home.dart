@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 // import das telas
 import 'package:orgalive/Screens/spending_limit/spending_limits.dart';
 import 'package:orgalive/Screens/releases/future_releases.dart';
-import 'package:orgalive/Screens/dashBoard/dashBoard.dart';
+import 'package:orgalive/Screens/dashboard/dashboard.dart';
 import 'package:orgalive/Screens/releases/releases.dart';
-import 'package:orgalive/Screens/reports/Reports.dart';
+import 'package:orgalive/Screens/reports/reports.dart';
 
 // import dos pacotes
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -24,7 +24,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-
   // controlar abas
   int _selectedIndex = 0;
   final List<Widget> _widgetOptions = [
@@ -37,7 +36,6 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-
     // função para bloquear o giro da tela
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -51,7 +49,7 @@ class _HomeState extends State<Home> {
           color: OrgaliveColors.greyDefault,
           boxShadow: [
             BoxShadow(
-              blurRadius: 20,
+              blurRadius: 15,
               color: Colors.black.withOpacity(.1),
             ),
           ],
@@ -59,14 +57,14 @@ class _HomeState extends State<Home> {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: 15.0,
-              vertical: 8,
+              horizontal: 5.0,
+              vertical: 6,
             ),
             child: GNav(
               rippleColor: OrgaliveColors.greyDefault,
               hoverColor: OrgaliveColors.greyDefault,
-              gap: 4,
-              iconSize: 24,
+              gap: 5,
+              iconSize: 23,
               padding: const EdgeInsets.symmetric(
                 horizontal: 20,
                 vertical: 12,
@@ -74,7 +72,6 @@ class _HomeState extends State<Home> {
               duration: const Duration(milliseconds: 600),
               tabBackgroundColor: OrgaliveColors.greyDefault,
               tabs: [
-
                 // dashboard
                 GButton(
                   iconActiveColor: Theme.of(context).secondaryHeaderColor,
@@ -105,10 +102,9 @@ class _HomeState extends State<Home> {
 
                 // limite de gastos
                 GButton(
-                  iconActiveColor: Theme.of(context).secondaryHeaderColor,
+                    iconActiveColor: Theme.of(context).secondaryHeaderColor,
                     iconColor: OrgaliveColors.silver,
-                  icon: Icons.track_changes_outlined
-                ),
+                    icon: Icons.track_changes_outlined),
               ],
               selectedIndex: _selectedIndex,
               onTabChange: (index) {
@@ -121,6 +117,5 @@ class _HomeState extends State<Home> {
         ),
       ),
     );
-
   }
 }
