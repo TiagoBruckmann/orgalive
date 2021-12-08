@@ -1,4 +1,8 @@
+// imports nativos do flutter
 import 'package:flutter/material.dart';
+
+// import das telas
+import 'package:orgalive/Screens/releases/widgets/body_future_releases.dart';
 
 class FutureReleases extends StatefulWidget {
   const FutureReleases({Key? key}) : super(key: key);
@@ -41,7 +45,7 @@ class _FutureReleasesState extends State<FutureReleases> {
           Padding(
             padding: EdgeInsets.only(left: 5),
           ),
-          Text("Transferencia"),
+          Text("Transferência"),
         ],
       ),
     ),
@@ -49,30 +53,49 @@ class _FutureReleasesState extends State<FutureReleases> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Lançamentos futuros"),
+    return DefaultTabController(
+      initialIndex: 0,
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Lançamentos futuros"),
 
-        // tabs de exibição dos status do pedido
-        bottom: TabBar(
-          indicatorWeight: 4,
-          isScrollable: true,
-          labelStyle: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+          // tabs de exibição dos status do pedido
+          bottom: TabBar(
+            indicatorWeight: 4,
+            isScrollable: true,
+            labelStyle: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+            controller: _tabController,
+            indicatorColor: Theme.of(context).secondaryHeaderColor,
+            tabs: _tabs,
           ),
-          controller: _tabController,
-          indicatorColor: Theme.of(context).secondaryHeaderColor,
-          tabs: _tabs,
+
         ),
 
-      ),
+        body: TabBarView(
+          controller: _tabController,
+          children: const [
 
-      body: TabBarView(
-        controller: _tabController,
-        children: const [
+            // despesa
+            Scaffold(
+              body: BodyFutureReleases( screenActive: 1, ),
+            ),
 
-        ],
+            // lucro
+            Scaffold(
+              body: BodyFutureReleases( screenActive: 2, ),
+            ),
+
+            // transferencia
+            Scaffold(
+              body: BodyFutureReleases( screenActive: 3, ),
+            ),
+
+          ],
+        ),
       ),
     );
   }

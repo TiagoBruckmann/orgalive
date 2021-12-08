@@ -34,7 +34,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
   // atualizar conta
   _editValue() {
 
-    // Campos de texto do titulo, descrição, regulamento, preço e porcentagem
+    // configurar o valor da conta
     MoneyMaskedTextController _controllerValue = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',', initialValue: widget.value);
 
     showDialog(
