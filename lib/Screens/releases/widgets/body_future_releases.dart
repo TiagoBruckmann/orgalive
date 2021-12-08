@@ -2,12 +2,16 @@
 import 'package:flutter/material.dart';
 
 // import dos pacotes
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:calendar_timeline/calendar_timeline.dart';
+import 'package:awesome_select/awesome_select.dart';
 import 'package:find_dropdown/find_dropdown.dart';
+import 'package:image_picker/image_picker.dart';
 
 // import dos modelos
+import 'package:orgalive/Model/Core/model_choices.dart' as model_choices;
 import 'package:orgalive/Model/Core/orgalive_colors.dart';
 
 class BodyFutureReleases extends StatefulWidget {
@@ -26,10 +30,77 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
   MoneyMaskedTextController _controllerProfit = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
   MoneyMaskedTextController _controllerTransfer = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
   TextEditingController _controllerDescription = TextEditingController();
+  TextEditingController _controllerTags = TextEditingController();
+  TextEditingController _controllerObs = TextEditingController();
 
   // variaveis da tela
   final DateTime _currentYear = DateTime.now();
   DateTime? _daySelected;
+  String _timeExpense = "month";
+  String _nameTimeExpense = "fixa";
+  String _installments = "2";
+  String _nameInstallments = "parcelada";
+
+  // detalhes do documento
+  final _picker = ImagePicker();
+  List<XFile>? _imageFileList;
+  String? _errorPicture;
+
+  set _imageFile(XFile? value) {
+    _imageFileList = value == null ? null : [value];
+  }
+
+  // seleciona a imagem do computador
+  Future _selectImage( String imageSource ) async {
+    try {
+
+      var image;
+      switch ( imageSource ) {
+        case "camera":
+            image = await _picker.pickImage(source: ImageSource.camera);
+        break;
+        case "gallery":
+          image = await _picker.pickImage(source: ImageSource.gallery);
+        break;
+      }
+
+      if (image != null) {
+        setState(() {
+          _imageFile = image;
+        });
+        _uploadImage();
+      }
+    } catch (e) {
+      _errorPicture = e.toString();
+    }
+  }
+
+  // faz o envio da imagem para o storage
+  Future _uploadImage() async {
+    firebase_storage.UploadTask uploadTask;
+
+    firebase_storage.Reference arquive = firebase_storage
+        .FirebaseStorage.instance
+        .ref()
+        .child("banners")
+        .child(_imageFileList![0].name);
+
+    final metadata = firebase_storage.SettableMetadata(
+      contentType: '${_imageFileList![0].mimeType}',
+      customMetadata: {'picked-file-path': _imageFileList![0].path},
+    );
+
+    uploadTask =
+        arquive.putData(await _imageFileList![0].readAsBytes(), metadata);
+
+    // _getImage();
+
+    return Future.value(uploadTask);
+  }
+
+  _addDocument() {
+
+  }
 
   _validateFields() {
 
@@ -56,7 +127,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                 color: OrgaliveColors.whiteSmoke,
                 fontSize: 20,
               ),
-              autofocus: true,
+              autofocus: false,
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
                 filled: true,
@@ -317,52 +388,18 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
             ),
           ),
 
-          // repetir lancamentos
-          ListTile(
-            title: const Text(
-              "Repetir lançamento",
-              style: TextStyle(
-                color: OrgaliveColors.silver,
-                fontSize: 16,
-              ),
-            ),
+          // repetir lancamento
+          Padding(
+            padding: const EdgeInsets.only( left: 16, top: 10 ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: const [
 
-            subtitle: Row(
-              children: [
-
-                Card(
-                  color: OrgaliveColors.bossanova,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular( 20 ),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric( horizontal: 20, vertical: 5 ),
-                    child: Text(
-                      "Fixo",
-                      style: TextStyle(
-                        color: OrgaliveColors.silver,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
-
-                Card(
-                  color: OrgaliveColors.bossanova,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular( 20 ),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric( horizontal: 20, vertical: 5 ),
-                    child: Text(
-                      "Parcelado",
-                      style: TextStyle(
-                        color: OrgaliveColors.silver,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15,
-                      ),
-                    ),
+                Text(
+                  "Repetir lançamento",
+                  style: TextStyle(
+                    color: OrgaliveColors.silver,
+                    fontSize: 18,
                   ),
                 ),
 
@@ -370,6 +407,245 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
             ),
           ),
 
+          // despesa fixa
+          SmartSelect<String?>.single(
+            title: ( widget.screenActive == 1 )
+            ? "Despesa fixa"
+            : ( widget.screenActive == 2 )
+            ? "Receita fixa"
+            : "Transferência fixa",
+            selectedValue: _timeExpense,
+            choiceItems: model_choices.fixed,
+            onChange: (selected) {
+              setState(() {
+                _timeExpense = selected.value!;
+                _nameTimeExpense = selected.title!;
+              });
+            },
+            modalType: S2ModalType.bottomSheet,
+            tileBuilder: (context, state) {
+              return S2Tile.fromState(
+                state,
+                isTwoLine: false,
+                title: Padding(
+                  padding: const EdgeInsets.only( left: 20 ),
+                  child: Text(
+                    ( _nameTimeExpense == "fixa" && widget.screenActive == 1 )
+                    ? "Despesa fixa"
+                    : ( _nameTimeExpense == "fixa" && widget.screenActive == 2 )
+                    ? "Receita fixa"
+                    : ( _nameTimeExpense == "fixa" && widget.screenActive == 3 )
+                    ? "Transferência fixa"
+                    : ( _nameTimeExpense != "fixa" && widget.screenActive == 1 )
+                    ? "Despesa fixa $_nameTimeExpense"
+                    : ( _nameTimeExpense != "fixa" && widget.screenActive == 2 )
+                    ? "Receita fixa $_nameTimeExpense"
+                    : "Transferência fixa $_nameTimeExpense",
+                    style: const TextStyle(
+                      color: OrgaliveColors.whiteSmoke,
+                    ),
+                  ),
+                )
+              );
+            },
+          ),
+
+          // depesa parcelada
+          SmartSelect<String?>.single(
+            title: ( widget.screenActive == 1 )
+            ? "Despesa parcelada"
+            : ( widget.screenActive == 2 )
+            ? "Receita parcelada"
+            : "Transferência parcelada",
+            selectedValue: _installments,
+            choiceItems: model_choices.installments,
+            onChange: (selected) {
+              setState(() {
+                _installments = selected.value!;
+                _nameInstallments = selected.title!;
+              });
+            },
+            modalType: S2ModalType.bottomSheet,
+            tileBuilder: (context, state) {
+              return S2Tile.fromState(
+                state,
+                isTwoLine: false,
+                title: Padding(
+                  padding: const EdgeInsets.only( left: 20 ),
+                  child: Text(
+                    ( _nameInstallments == "parcelada" && widget.screenActive == 1 )
+                    ? "Despesa parcelada"
+                    : ( _nameInstallments == "parcelada" && widget.screenActive == 2 )
+                    ? "Receita parcelada"
+                    : ( _nameInstallments == "parcelada" && widget.screenActive == 3 )
+                    ? "Transferência parcelada"
+                    : "Parcelado em $_nameInstallments",
+                    style: const TextStyle(
+                      color: OrgaliveColors.whiteSmoke,
+                    ),
+                  ),
+                )
+              );
+            },
+          ),
+
+          // detalhes do lancamento
+          ExpansionTile(
+            title: const Text(
+              "Detalhes do lançamento",
+              style: TextStyle(
+                color: OrgaliveColors.silver,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            children: [
+
+              // tags
+              ListTile(
+                title: const Padding(
+                  padding: EdgeInsets.only( bottom: 10 ),
+                  child: Text(
+                    "Tags",
+                    style: TextStyle(
+                      color: OrgaliveColors.bossanova,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                subtitle: TextField(
+                  controller: _controllerTags,
+                  keyboardType: TextInputType.text,
+                  style: const TextStyle(
+                    color: OrgaliveColors.whiteSmoke,
+                    fontSize: 15,
+                  ),
+                  textInputAction: TextInputAction.done,
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
+                    hintText: "Anexar tags",
+                    hintStyle: const TextStyle(
+                      color: OrgaliveColors.whiteSmoke,
+                      fontSize: 15,
+                    ),
+                    prefixIcon: const FaIcon(
+                      FontAwesomeIcons.tag,
+                      color: OrgaliveColors.whiteSmoke,
+                    ),
+                    filled: true,
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: OrgaliveColors.greyBackground,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: OrgaliveColors.greyBackground,
+                      ),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                ),
+              ),
+
+              // observacao
+              ListTile(
+                title: const Padding(
+                  padding: EdgeInsets.only( bottom: 10 ),
+                  child: Text(
+                    "Observação",
+                    style: TextStyle(
+                      color: OrgaliveColors.bossanova,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                subtitle: TextField(
+                  controller: _controllerObs,
+                  keyboardType: TextInputType.text,
+                  style: const TextStyle(
+                    color: OrgaliveColors.whiteSmoke,
+                    fontSize: 15,
+                  ),
+                  textInputAction: TextInputAction.done,
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
+                    hintText: "Adicione alguma observação",
+                    hintStyle: const TextStyle(
+                      color: OrgaliveColors.whiteSmoke,
+                      fontSize: 15,
+                    ),
+                    prefixIcon: const FaIcon(
+                      FontAwesomeIcons.tag,
+                      color: OrgaliveColors.whiteSmoke,
+                    ),
+                    filled: true,
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: OrgaliveColors.greyBackground,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: OrgaliveColors.greyBackground,
+                      ),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                ),
+              ),
+
+              // anexos
+              ListTile(
+                title: const Padding(
+                  padding: EdgeInsets.only( bottom: 10 ),
+                  child: Text(
+                    "Anexos",
+                    style: TextStyle(
+                      color: OrgaliveColors.bossanova,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                subtitle: GestureDetector(
+                  onTap: () {
+                    _addDocument();
+                  },
+                  child: Row(
+                    children: [
+
+                      const FaIcon(
+                        FontAwesomeIcons.fileUpload,
+                        color: OrgaliveColors.whiteSmoke,
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.only( left: 10 ),
+                        child: Text(
+                          ( _imageFileList == null )
+                          ? "Adicionar anexo"
+                          : "${_imageFileList![0].name}",
+                          style: const TextStyle(
+                            color: OrgaliveColors.whiteSmoke,
+                            fontSize: 15,
+                          ),
+                        ),
+                      )
+
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // salvar
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
             child: ElevatedButton(

@@ -3,7 +3,7 @@ description: Orgalive - Seu aplicativo de gestão financeira
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+7
+version: 1.0.0+9
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -13,15 +13,18 @@ dependencies:
     sdk: flutter
 
   firebase_performance: ^0.7.1+5
+  font_awesome_flutter: ^9.2.0
   firebase_crashlytics: ^2.4.0
   flutter_masked_text2: ^0.9.1
-  font_awesome_flutter: ^9.2.0
   firebase_analytics: ^8.3.4
+  firebase_storage: ^10.2.0
   calendar_timeline: ^1.0.4
   cloud_firestore: ^3.1.1
   cupertino_icons: ^1.0.2
-  firebase_core: ^1.10.2
+  awesome_select: ^5.1.0
   google_nav_bar: ^5.0.5
+  firebase_core: ^1.10.2
+  image_picker: ^0.8.4+4
   firebase_auth: ^3.3.0
   find_dropdown: ^1.0.0
   
