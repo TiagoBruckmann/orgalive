@@ -17,15 +17,23 @@ Orgalive - Seu aplicativo de gestão e organização financeira
 ##### Pacotes utilizados
 
 <ul>
-    <li>firebase_crashlytics</li>
+    <li>firebase_performance</li>
     <li>font_awesome_flutter</li>
+    <li>firebase_crashlytics</li>
+    <li>flutter_masked_text2</li>
     <li>firebase_analytics</li>
     <li>calendar_timeline</li>
+    <li>firebase_storage</li>
     <li>cloud_firestore</li>
     <li>cupertino_icons</li>
+    <li>awesome_select</li>
     <li>google_nav_bar</li>
     <li>firebase_core</li>
     <li>firebase_auth</li>
+    <li>find_dropdown</li>
+    <li>image_picker</li>
+    <li>graphic</li>
+    <li>intl</li>
 </ul>
 
 ### :star: Gerar APK release da loja android
@@ -52,6 +60,7 @@ Cores padrão:
 
 Cinza:
 
+- matterhorn ![#4F4F4F](https://via.placeholder.com/15/4F4F4F/000000?text=+) `#4F4F4F`
 - bossanova ![#494649](https://via.placeholder.com/15/494649/000000?text=+) `#494649`
 - darkGray ![#AAAAAA](https://via.placeholder.com/15/AAAAAA/000000?text=+) `#AAAAAA`
 - silver ![#BDBDBD](https://via.placeholder.com/15/BDBDBD/000000?text=+) `#BDBDBD`

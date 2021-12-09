@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 // import dos modelos
-import 'package:orgalive/Model/Core/orgalive_colors.dart';
+import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 
 class CardDateWidget extends StatelessWidget {
 

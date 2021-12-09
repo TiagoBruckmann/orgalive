@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 // import dos modelos
-import 'package:orgalive/Model/Core/orgalive_colors.dart';
+import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 
 // import das telas
 import 'package:orgalive/Screens/dashboard/categories_essentials.dart';
-import 'package:orgalive/Screens/dashboard/setting_accounts.dart';
 import 'package:orgalive/Screens/dashboard/personalize.dart';
+import 'package:orgalive/Screens/dashboard/widget/app_bar_widget.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -21,33 +21,20 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
 
-  // variaveis da tela
-  bool _valueVisible = false;
+  String _timeOfDay = "Bom dia";
 
-  // alterar a visibilidade do valor
-  _changeVisibility() {
-    if ( _valueVisible == false ) {
-      setState(() {
-        _valueVisible = true;
-      });
+  // busca a hora atual
+  _getTimeDay() {
+
+    final TimeOfDay currentTime = TimeOfDay.now();
+
+    if ( currentTime.hour >= 06 && currentTime.hour < 12 ) {
+      _timeOfDay = "Bom dia";
+    } else if ( currentTime.hour >= 12 && currentTime.hour < 18 ) {
+      _timeOfDay = "Boa tarde";
     } else {
-      setState(() {
-        _valueVisible = false;
-      });
+      _timeOfDay = "Boa noite";
     }
-  }
-
-  // gerenciar as contas
-  _goToSettingAccounts() {
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => const SettingAccounts(
-          value: 150.00,
-        ),
-      ),
-    );
   }
 
   // novo limite de gasto
@@ -82,170 +69,23 @@ class _DashboardState extends State<Dashboard> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _getTimeDay();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Olá, Tiago"),
+      appBar: AppBarWidget(
+        user: "Tiago B",
+        timeOfDay: _timeOfDay,
       ),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 5),
         child: Column(
           children: [
-
-            // saldo geral
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
-              child: Card(
-                color: OrgaliveColors.greyDefault,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular( 10 ),
-                ),
-                child: Column(
-                  children: [
-
-                    // saldo geral
-                    ListTile(
-                      title: const Text(
-                        "Saldo geral",
-                        style: TextStyle(
-                          color: OrgaliveColors.silver,
-                          fontSize: 16,
-                        ),
-                      ),
-                      subtitle: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-
-                          Text(
-                            ( _valueVisible == false )
-                            ? "R\$ 1.514,49"
-                            : "R\$  - - - - - -",
-                            style: const TextStyle(
-                              color: OrgaliveColors.whiteSmoke,
-                              fontSize: 20,
-                            ),
-                          ),
-
-                          GestureDetector(
-                            onTap: () {
-                              _changeVisibility();
-                            },
-                            child: Icon(
-                              ( _valueVisible == false )
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                              color: OrgaliveColors.darkGray,
-                              size: 30,
-                            ),
-                          ),
-
-                        ],
-                      )
-                    ),
-
-                    const Divider(
-                      color: OrgaliveColors.bossanova,
-                      height: 30,
-                      indent: 16,
-                      endIndent: 16,
-                    ),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: const [
-
-                        Padding(
-                          padding: EdgeInsets.only( left: 16 ),
-                          child: Text(
-                            "Minhas contas",
-                            style: TextStyle(
-                              color: OrgaliveColors.whiteSmoke,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 22,
-                            ),
-                          ),
-                        ),
-
-                      ],
-                    ),
-
-                    // contas
-                    ListTile(
-                      leading: const CircleAvatar(
-                        backgroundColor: OrgaliveColors.darkGray,
-                        radius: 30,
-                        child: Icon(
-                          Icons.account_balance,
-                          color: OrgaliveColors.bossanova,
-                          size: 30,
-                        ),
-                      ),
-                      title: const Text(
-                        "Conta inicial",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 18,
-                        ),
-                      ),
-                      subtitle: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-
-                          const Text(
-                            "Outros",
-                            style: TextStyle(
-                              color: OrgaliveColors.silver,
-                              fontSize: 15,
-                            ),
-                          ),
-
-                          Text(
-                            ( _valueVisible == false )
-                            ? "R\$ 1.514,49"
-                            : "R\$  - - - - - -",
-                            style: const TextStyle(
-                              color: OrgaliveColors.blueDefault,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 18,
-                            ),
-                          ),
-
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width - 65,
-                      child: Padding(
-                        padding: const EdgeInsets.only( top: 10, bottom: 20 ),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            primary: OrgaliveColors.greenDefault,
-                            // padding: const EdgeInsets.fromLTRB(70, 10, 70, 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: () {
-                            _goToSettingAccounts();
-                          },
-                          child: const Text(
-                            "Gerenciar contas",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  ],
-                ),
-              ),
-            ),
 
             // limite de gastos
             Padding(

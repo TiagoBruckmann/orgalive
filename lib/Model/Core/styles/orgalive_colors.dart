@@ -11,6 +11,7 @@ class OrgaliveColors {
   static const Color redDefault = Color(0xffe42924);
   
   // cinza
+  static const Color matterhorn = Color(0xFF4F4F4F);
   static const Color bossanova = Color(0xff494649);
   static const Color darkGray = Color(0xffAAAAAA);
   static const Color silver = Color(0xFFBDBDBD);

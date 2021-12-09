@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:calendar_timeline/calendar_timeline.dart';
 
 // import dos modelos
-import 'package:orgalive/Model/Core/orgalive_colors.dart';
+import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 
 // import das telas
 import 'package:orgalive/Screens/releases/widgets/card_date_widget.dart';

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 // import dos modelos
-import 'package:orgalive/Model/Core/orgalive_colors.dart';
+import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 
 class Personalize extends StatefulWidget {
   const Personalize({Key? key}) : super(key: key);

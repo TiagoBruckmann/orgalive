@@ -12,7 +12,10 @@ import 'package:image_picker/image_picker.dart';
 
 // import dos modelos
 import 'package:orgalive/Model/Core/model_choices.dart' as model_choices;
-import 'package:orgalive/Model/Core/orgalive_colors.dart';
+import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
+
+// import das telas
+import 'package:orgalive/Screens/widgets/message_widget.dart';
 
 class BodyFutureReleases extends StatefulWidget {
 
@@ -26,12 +29,12 @@ class BodyFutureReleases extends StatefulWidget {
 class _BodyFutureReleasesState extends State<BodyFutureReleases> {
 
   // configurar o valor da conta
-  MoneyMaskedTextController _controllerExpense = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
-  MoneyMaskedTextController _controllerProfit = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
-  MoneyMaskedTextController _controllerTransfer = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
-  TextEditingController _controllerDescription = TextEditingController();
-  TextEditingController _controllerTags = TextEditingController();
-  TextEditingController _controllerObs = TextEditingController();
+  final MoneyMaskedTextController _controllerExpense = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
+  final MoneyMaskedTextController _controllerProfit = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
+  final MoneyMaskedTextController _controllerTransfer = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
+  final TextEditingController _controllerDescription = TextEditingController();
+  final TextEditingController _controllerTags = TextEditingController();
+  final TextEditingController _controllerObs = TextEditingController();
 
   // variaveis da tela
   final DateTime _currentYear = DateTime.now();
@@ -48,6 +51,28 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
 
   set _imageFile(XFile? value) {
     _imageFileList = value == null ? null : [value];
+  }
+
+  // seleção do serviço da camera
+  _settingCamera() {
+    final snackBar = SnackBar(
+      content: ListTile(
+        title: TextButton(
+          child: const Text("Camera"),
+          onPressed: () {
+            _selectImage("camera");
+          },
+        ),
+        subtitle: TextButton(
+          child: const Text("Galeria"),
+          onPressed: () {
+            _selectImage("gallery");
+          },
+        ),
+      ),
+    );
+
+    return snackBar;
   }
 
   // seleciona a imagem do computador
@@ -68,7 +93,6 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
         setState(() {
           _imageFile = image;
         });
-        _uploadImage();
       }
     } catch (e) {
       _errorPicture = e.toString();
@@ -80,30 +104,64 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
     firebase_storage.UploadTask uploadTask;
 
     firebase_storage.Reference arquive = firebase_storage
-        .FirebaseStorage.instance
-        .ref()
-        .child("banners")
-        .child(_imageFileList![0].name);
+      .FirebaseStorage.instance
+      .ref()
+      .child("banners")
+      .child(_imageFileList![0].name);
 
     final metadata = firebase_storage.SettableMetadata(
       contentType: '${_imageFileList![0].mimeType}',
       customMetadata: {'picked-file-path': _imageFileList![0].path},
     );
 
-    uploadTask =
-        arquive.putData(await _imageFileList![0].readAsBytes(), metadata);
-
-    // _getImage();
+    uploadTask = arquive.putData(await _imageFileList![0].readAsBytes(), metadata);
 
     return Future.value(uploadTask);
   }
 
-  _addDocument() {
-
-  }
-
+  // validar lancamento
   _validateFields() {
 
+    // valores
+    if ( _controllerExpense.text == "R\$ 0,00" && widget.screenActive == 1 ) {
+      CustomSnackBar(context, "Insira um valor válido", OrgaliveColors.redDefault);
+    }
+
+    if ( _controllerProfit.text == "R\$ 0,00" && widget.screenActive == 2 ) {
+      CustomSnackBar(context, "Insira um valor válido", OrgaliveColors.redDefault);
+    }
+
+    if ( _controllerTransfer.text == "R\$ 0,00" && widget.screenActive == 3 ) {
+      CustomSnackBar(context, "Insira um valor válido", OrgaliveColors.redDefault);
+    }
+
+    // descricao
+    if ( _controllerDescription.text.trim().isEmpty ) {
+      CustomSnackBar(context, "Insira uma descrição para o lançamento", OrgaliveColors.redDefault);
+    }
+
+    // dia selecionado para
+    if ( _daySelected == null ) {
+      CustomSnackBar(context, "selecione uma data para o valor ser lançado", OrgaliveColors.redDefault);
+    }
+
+    if (
+      _controllerExpense.text != "R\$ 0,00" || _controllerProfit.text != "R\$ 0,00" || _controllerTransfer.text != "R\$ 0,00" &&
+      _controllerDescription.text.trim().isNotEmpty && _daySelected != null
+    ) {
+      _saveRelease();
+    }
+  }
+
+  _saveRelease() async {
+
+    if ( widget.screenActive == 1 ) {
+      // despesa
+    } else if ( widget.screenActive == 2 ) {
+      // lucro / faturamento
+    } else {
+      // transferencia
+    }
   }
 
   @override
@@ -376,8 +434,6 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
               leftMargin: 16,
               onDateSelected: (date) {
                 _daySelected = date;
-                print("date => $date");
-                print("_daySelected => $_daySelected");
               },
               monthColor: OrgaliveColors.silver,
               dayColor: OrgaliveColors.bossanova,
@@ -615,7 +671,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                 ),
                 subtitle: GestureDetector(
                   onTap: () {
-                    _addDocument();
+                    _settingCamera();
                   },
                   child: Row(
                     children: [
@@ -630,18 +686,30 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                         child: Text(
                           ( _imageFileList == null )
                           ? "Adicionar anexo"
-                          : "${_imageFileList![0].name}",
+                          : _imageFileList![0].name,
                           style: const TextStyle(
                             color: OrgaliveColors.whiteSmoke,
                             fontSize: 15,
                           ),
                         ),
-                      )
+                      ),
 
                     ],
                   ),
                 ),
               ),
+
+              // erro na foto
+              ( _errorPicture == null )
+              ? const Padding(padding: EdgeInsets.zero)
+              : Text(
+                "$_errorPicture",
+                style: const TextStyle(
+                  color: OrgaliveColors.redDefault,
+                  fontSize: 15,
+                ),
+              ),
+
             ],
           ),
 
