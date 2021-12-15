@@ -9,8 +9,9 @@ import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 
 // import das telas
 import 'package:orgalive/Screens/dashboard/categories_essentials.dart';
-import 'package:orgalive/Screens/dashboard/personalize.dart';
 import 'package:orgalive/Screens/dashboard/widget/app_bar_widget.dart';
+import 'package:orgalive/Screens/dashboard/personalize.dart';
+import 'package:orgalive/Screens/home.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -22,6 +23,7 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
 
   String _timeOfDay = "Bom dia";
+  int _notifications = 1;
 
   // busca a hora atual
   _getTimeDay() {
@@ -40,6 +42,14 @@ class _DashboardState extends State<Dashboard> {
   // novo limite de gasto
   _goToNewSpending() {
     // vai para a tela SpendingLimits()
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (builder) => const Home(
+          selected: 4,
+        ),
+      ),
+    );
   }
 
   // mais informações
@@ -78,8 +88,10 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBarWidget(
+        context: context,
         user: "Tiago B",
         timeOfDay: _timeOfDay,
+        notifications: _notifications,
       ),
 
       body: SingleChildScrollView(
@@ -123,14 +135,14 @@ class _DashboardState extends State<Dashboard> {
                             child: Card(
                               color: OrgaliveColors.greenDefault,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular( 30 ),
+                                borderRadius: BorderRadius.circular( 50 ),
                               ),
                               child: const Padding(
                                 padding: EdgeInsets.all(6),
                                 child: FaIcon(
                                   FontAwesomeIcons.plus,
                                   color: OrgaliveColors.greyDefault,
-                                  size: 20,
+                                  size: 18,
                                 ),
                               ),
 

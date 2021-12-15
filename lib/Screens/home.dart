@@ -17,22 +17,43 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+
+  final int selected;
+  const Home({ Key? key, required this.selected }) : super(key: key);
 
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
+
   // controlar abas
   int _selectedIndex = 0;
-  final List<Widget> _widgetOptions = [
-    const Dashboard(),
-    const Releases(),
-    const FutureReleases(),
-    const Reports(),
-    const SpendingLimits(),
+  final List<Widget> _widgetOptions = const [
+    Dashboard(),
+    Releases(),
+    FutureReleases(),
+    Reports(),
+    SpendingLimits(),
   ];
+
+  // redireciona para a tela desejada
+  _redirect() {
+
+    if ( widget.selected != 0 ) {
+
+      setState(() {
+        _selectedIndex = widget.selected;
+      });
+
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _redirect();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,9 +123,10 @@ class _HomeState extends State<Home> {
 
                 // limite de gastos
                 GButton(
-                    iconActiveColor: Theme.of(context).secondaryHeaderColor,
-                    iconColor: OrgaliveColors.silver,
-                    icon: Icons.track_changes_outlined),
+                  iconActiveColor: Theme.of(context).secondaryHeaderColor,
+                  iconColor: OrgaliveColors.silver,
+                  icon: Icons.track_changes_outlined,
+                ),
               ],
               selectedIndex: _selectedIndex,
               onTabChange: (index) {

@@ -79,7 +79,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
   Future _selectImage( String imageSource ) async {
     try {
 
-      var image;
+      XFile? image;
       switch ( imageSource ) {
         case "camera":
             image = await _picker.pickImage(source: ImageSource.camera);
@@ -106,7 +106,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
     firebase_storage.Reference arquive = firebase_storage
       .FirebaseStorage.instance
       .ref()
-      .child("banners")
+      .child("documents")
       .child(_imageFileList![0].name);
 
     final metadata = firebase_storage.SettableMetadata(
@@ -157,10 +157,20 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
 
     if ( widget.screenActive == 1 ) {
       // despesa
+
+      if ( _imageFileList != null ) {
+        _uploadImage();
+      }
     } else if ( widget.screenActive == 2 ) {
       // lucro / faturamento
+      if ( _imageFileList != null ) {
+        _uploadImage();
+      }
     } else {
       // transferencia
+      if ( _imageFileList != null ) {
+        _uploadImage();
+      }
     }
   }
 
@@ -339,8 +349,8 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
               dropdownItemBuilder: ( BuildContext context, item, bool isSelected ) {
                 return Container(
                   decoration: !isSelected
-                      ? null
-                      : BoxDecoration(
+                  ? null
+                  : BoxDecoration(
                     border: Border.all(
                       color: Theme.of(context).primaryColor,
                     ),

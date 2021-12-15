@@ -24,7 +24,6 @@ final ThemeData defaultTheme = ThemeData(
 
   scaffoldBackgroundColor: OrgaliveColors.greyBackground,
 
-
 );
 
 void main() async {
@@ -50,7 +49,9 @@ void main() async {
     MaterialApp(
       title: "Orgalive",
       theme: defaultTheme,
-      home: const Home(),
+      home: const Home(
+        selected: 0,
+      ),
       debugShowCheckedModeBanner: false,
     ),
   );
