@@ -156,22 +156,33 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
   _saveRelease() async {
 
     if ( widget.screenActive == 1 ) {
-      // despesa
 
+      // despesa
       if ( _imageFileList != null ) {
         _uploadImage();
       }
+
     } else if ( widget.screenActive == 2 ) {
+
       // lucro / faturamento
       if ( _imageFileList != null ) {
         _uploadImage();
       }
+
     } else {
+
       // transferencia
       if ( _imageFileList != null ) {
         _uploadImage();
       }
+
     }
+
+    // segue a função
+  }
+
+  _updateAccount() async {
+
   }
 
   @override
@@ -333,8 +344,8 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                       children: [
                         Text(
                           (item == null)
-                              ? "Selecione uma categoria"
-                              : "$item",
+                          ? "Selecione uma categoria"
+                          : "$item",
                           style: const TextStyle(
                             color: OrgaliveColors.whiteSmoke,
                           ),

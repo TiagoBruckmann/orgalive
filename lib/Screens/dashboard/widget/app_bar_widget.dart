@@ -23,18 +23,18 @@ class AppBarWidget extends PreferredSize {
   AppBarWidget({ Key? key, required this.context, required this.user, required this.timeOfDay, required this.notifications })
   : super(
     key: key,
-    preferredSize: const Size.fromHeight(400),
+    preferredSize: const Size.fromHeight(410),
     child: SizedBox(
-      height: 400,
+      height: 410,
       child: Stack(
         children: [
           Container(
-            height: 180,
+            height: 200,
             width: double.maxFinite,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             decoration: const BoxDecoration(gradient: AppGradients.linear),
             child: Padding(
-              padding: const EdgeInsets.only(top: 50),
+              padding: const EdgeInsets.only(top: 70),
               child: ListTile(
                 leading: GestureDetector(
                   onTap: () {
@@ -132,7 +132,7 @@ class AppBarWidget extends PreferredSize {
             ),
           ),
           const Align(
-            alignment: Alignment(30.0, 8.0),
+            alignment: Alignment(50.0, 12.0),
             child: MainSettings(),
           ),
         ],

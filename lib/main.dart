@@ -9,6 +9,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 
 // import das telas
+import 'package:orgalive/Screens/login/info.dart';
 import 'package:orgalive/Screens/home.dart';
 
 final ThemeData defaultTheme = ThemeData(
@@ -49,9 +50,12 @@ void main() async {
     MaterialApp(
       title: "Orgalive",
       theme: defaultTheme,
+      home: const Info(),
+      /*
       home: const Home(
         selected: 0,
       ),
+      */
       debugShowCheckedModeBanner: false,
     ),
   );

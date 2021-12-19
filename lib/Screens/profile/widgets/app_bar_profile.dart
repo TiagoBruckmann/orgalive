@@ -19,7 +19,7 @@ class AppBarProfile extends PreferredSize {
     key: key,
     preferredSize: const Size.fromHeight(150),
     child: SizedBox(
-      height: 150,
+      height: 180,
       child: Stack(
         children: [
           Container(
@@ -28,7 +28,7 @@ class AppBarProfile extends PreferredSize {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             decoration: const BoxDecoration(gradient: AppGradients.linear),
             child: Padding(
-              padding: const EdgeInsets.only(top: 50),
+              padding: const EdgeInsets.only(top: 80),
               child: ListTile(
                 leading: GestureDetector(
                   onTap: () {
@@ -75,7 +75,9 @@ class AppBarProfile extends PreferredSize {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (builder) => const Profile(),
+                          builder: (builder) => Profile(
+                            name: user,
+                          ),
                         ),
                       );
                     },
