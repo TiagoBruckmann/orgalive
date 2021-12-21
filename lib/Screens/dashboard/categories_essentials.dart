@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 // import dos modelos
+import 'package:orgalive/Model/Core/firebase/model_firebase.dart';
 import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 import 'package:orgalive/Model/model_categories.dart';
 
@@ -50,6 +51,12 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
 
   _saveCategories() {
 
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Analytics().sendScreen("essentials-categories");
   }
 
   @override

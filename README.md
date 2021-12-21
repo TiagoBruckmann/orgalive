@@ -23,9 +23,11 @@ Orgalive - Seu aplicativo de gestão e organização financeira
     <li>flutter_masked_text2</li>
     <li>firebase_analytics</li>
     <li>calendar_timeline</li>
+    <li>connectivity_plus</li>
     <li>firebase_storage</li>
     <li>cloud_firestore</li>
     <li>cupertino_icons</li>
+    <li>google_sign_in</li>
     <li>awesome_select</li>
     <li>google_nav_bar</li>
     <li>firebase_core</li>

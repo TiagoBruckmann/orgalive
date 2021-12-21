@@ -1,10 +1,12 @@
 // imports nativos do flutter
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 // import dos pacotes
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 // import dos modelos
+import 'package:orgalive/Model/Core/firebase/model_firebase.dart';
 import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 
 // import das telas
@@ -23,10 +25,20 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
 
   String _timeOfDay = "Bom dia";
-  int _notifications = 1;
+  final int _notifications = 1;
+  String _user = "";
+  String _photo = "";
+  String _userUid = "";
 
   // busca a hora atual
-  _getTimeDay() {
+  _getInfos() async {
+
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? userData = auth.currentUser;
+
+    _userUid = userData!.uid;
+    _user = userData.displayName!;
+    _photo = userData.photoURL!;
 
     final TimeOfDay currentTime = TimeOfDay.now();
 
@@ -81,7 +93,8 @@ class _DashboardState extends State<Dashboard> {
   @override
   void initState() {
     super.initState();
-    _getTimeDay();
+    _getInfos();
+    Analytics().sendScreen("Dashboard");
   }
 
   @override
@@ -89,7 +102,9 @@ class _DashboardState extends State<Dashboard> {
     return Scaffold(
       appBar: AppBarWidget(
         context: context,
-        user: "Tiago B",
+        userUid: _userUid,
+        user: _user,
+        photo: _photo,
         timeOfDay: _timeOfDay,
         notifications: _notifications,
       ),

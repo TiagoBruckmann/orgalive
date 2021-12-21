@@ -6,6 +6,7 @@
     <!-- apenas quando esta sendo compilado local utilizado na primeira linha de aplication -->
     <!-- android:usesCleartextTraffic="true" -->
     <application
+        android:usesCleartextTraffic="true"
         android:label="orgalive"
         android:icon="@mipmap/ic_launcher">
         <activity

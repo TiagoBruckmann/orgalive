@@ -8,7 +8,9 @@ import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 import 'package:orgalive/Screens/dashboard/setting_accounts.dart';
 
 class MainSettings extends StatefulWidget {
-  const MainSettings({Key? key}) : super(key: key);
+
+  final String userUid;
+  const MainSettings({ Key? key, required this.userUid }) : super(key: key);
 
   @override
   _MainSettingsState createState() => _MainSettingsState();
@@ -38,7 +40,8 @@ class _MainSettingsState extends State<MainSettings> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (builder) => const SettingAccounts(
+        builder: (builder) => SettingAccounts(
+          userUid: widget.userUid,
           value: 150.00,
         ),
       ),

@@ -12,10 +12,12 @@ import 'package:orgalive/Screens/profile/profile.dart';
 class AppBarProfile extends PreferredSize {
 
   final BuildContext context;
+  final String userUid;
+  final String photo;
   final String user;
 
-  AppBarProfile({ Key? key, required this.context, required this.user })
-    : super(
+  AppBarProfile({ Key? key, required this.userUid, required this.photo, required this.context, required this.user })
+  : super(
     key: key,
     preferredSize: const Size.fromHeight(150),
     child: SizedBox(
@@ -36,6 +38,8 @@ class AppBarProfile extends PreferredSize {
                       context,
                       MaterialPageRoute(
                         builder: (builder) => Settings(
+                          userUid: userUid,
+                          photo: photo,
                           user: user,
                         ),
                       ),
@@ -48,7 +52,9 @@ class AppBarProfile extends PreferredSize {
                       borderRadius: BorderRadius.circular(10),
                       image: DecorationImage(
                         image: NetworkImage(
-                          "https://ui-avatars.com/api/?name=$user",
+                          ( photo.isEmpty )
+                          ? "https://ui-avatars.com/api/?name=$user"
+                          : photo,
                         ),
                       ),
                     ),
@@ -76,6 +82,7 @@ class AppBarProfile extends PreferredSize {
                         context,
                         MaterialPageRoute(
                           builder: (builder) => Profile(
+                            photo: photo,
                             name: user,
                           ),
                         ),

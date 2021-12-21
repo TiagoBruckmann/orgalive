@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:calendar_timeline/calendar_timeline.dart';
 
 // import dos modelos
+import 'package:orgalive/Model/Core/firebase/model_firebase.dart';
 import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 
 // import das telas
@@ -20,6 +21,12 @@ class Releases extends StatefulWidget {
 class _ReleasesState extends State<Releases> {
   // variaveis da tela
   final DateTime _currentYear = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    Analytics().sendScreen("Releases");
+  }
 
   @override
   Widget build(BuildContext context) {

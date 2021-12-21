@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "207464663642-b3om9vv77o719ge0t614mukl8bprkt08.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.orgalive",
+            "certificate_hash": "58350a243e0e23ceccf5a136ecfd0f18c94b7334"
+          }
+        },
+        {
           "client_id": "207464663642-q3kgng07bjs1rcbetmkjtf341npe4rnp.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -9,8 +9,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 
 // import das telas
-import 'package:orgalive/Screens/login/info.dart';
-import 'package:orgalive/Screens/home.dart';
+import 'package:orgalive/Screens/splash_screen.dart';
 
 final ThemeData defaultTheme = ThemeData(
   primaryColor: OrgaliveColors.greyDefault,
@@ -22,12 +21,10 @@ final ThemeData defaultTheme = ThemeData(
     ),
     backgroundColor: OrgaliveColors.greyDefault,
   ),
-
   scaffoldBackgroundColor: OrgaliveColors.greyBackground,
-
 );
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
@@ -41,21 +38,11 @@ void main() async {
     ),
   );
 
-  // função para bloquear o giro da tela
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]);
-
   runApp(
     MaterialApp(
       title: "Orgalive",
       theme: defaultTheme,
-      home: const Info(),
-      /*
-      home: const Home(
-        selected: 0,
-      ),
-      */
+      home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     ),
   );

@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 // import das telas
 import 'package:orgalive/Screens/releases/widgets/body_future_releases.dart';
 
+// import dos modelos
+import 'package:orgalive/Model/Core/firebase/model_firebase.dart';
+
 class FutureReleases extends StatefulWidget {
   const FutureReleases({Key? key}) : super(key: key);
 
@@ -50,6 +53,12 @@ class _FutureReleasesState extends State<FutureReleases> {
       ),
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    Analytics().sendScreen("future-releases");
+  }
 
   @override
   Widget build(BuildContext context) {

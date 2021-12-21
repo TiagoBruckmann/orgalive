@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:calendar_timeline/calendar_timeline.dart';
 
 // import dos modelos
+import 'package:orgalive/Model/Core/firebase/model_firebase.dart';
 import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 
 class DetailSpending extends StatefulWidget {
@@ -82,6 +83,7 @@ class _DetailSpendingState extends State<DetailSpending> {
   void initState() {
     super.initState();
     _getMonth();
+    Analytics().sendScreen("detail-spending");
   }
 
   @override

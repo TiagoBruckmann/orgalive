@@ -16,11 +16,13 @@ import 'package:orgalive/Screens/profile/settings.dart';
 class AppBarWidget extends PreferredSize {
 
   final BuildContext context;
+  final String userUid;
+  final String photo;
   final String user;
   final String timeOfDay;
   final int notifications;
 
-  AppBarWidget({ Key? key, required this.context, required this.user, required this.timeOfDay, required this.notifications })
+  AppBarWidget({ Key? key, required this.context, required this.userUid, required this.photo, required this.user, required this.timeOfDay, required this.notifications })
   : super(
     key: key,
     preferredSize: const Size.fromHeight(410),
@@ -42,6 +44,8 @@ class AppBarWidget extends PreferredSize {
                       context,
                       MaterialPageRoute(
                         builder: (builder) => Settings(
+                          userUid: userUid,
+                          photo: photo,
                           user: user,
                         ),
                       ),
@@ -54,7 +58,9 @@ class AppBarWidget extends PreferredSize {
                       borderRadius: BorderRadius.circular(10),
                       image: DecorationImage(
                         image: NetworkImage(
-                          "https://ui-avatars.com/api/?name=$user",
+                          ( photo.isEmpty )
+                          ? "https://ui-avatars.com/api/?name=$user"
+                          : photo,
                         ),
                       ),
                     ),
@@ -131,9 +137,11 @@ class AppBarWidget extends PreferredSize {
               ),
             ),
           ),
-          const Align(
-            alignment: Alignment(50.0, 12.0),
-            child: MainSettings(),
+          Align(
+            alignment: const Alignment(50.0, 12.0),
+            child: MainSettings(
+              userUid: userUid,
+            ),
           ),
         ],
       ),

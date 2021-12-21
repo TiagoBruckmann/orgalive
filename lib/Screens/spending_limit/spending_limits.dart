@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 // import dos modelos
-import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 import 'package:orgalive/Screens/spending_limit/detail_spending.dart';
+import 'package:orgalive/Model/Core/firebase/model_firebase.dart';
+import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 
 class SpendingLimits extends StatefulWidget {
   const SpendingLimits({Key? key}) : super(key: key);
@@ -24,6 +25,12 @@ class _SpendingLimitsState extends State<SpendingLimits> {
         builder: (builder) => DetailSpending(id: id, name: spendingName)
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Analytics().sendScreen("spending-limits");
   }
 
   @override

@@ -7,6 +7,7 @@ import 'package:calendar_timeline/calendar_timeline.dart';
 import 'package:graphic/graphic.dart';
 
 // import dos modelos
+import 'package:orgalive/Model/Core/firebase/model_firebase.dart';
 import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 import 'package:orgalive/Screens/reports/data.dart';
 
@@ -42,6 +43,12 @@ class _ReportsState extends State<Reports> {
         builder: (builder) => const DetailReports(),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Analytics().sendScreen("reports");
   }
 
   @override

@@ -1,12 +1,23 @@
 // imports nativos do flutter
 import 'package:flutter/material.dart';
 
+// import dos pacotes
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 // import dos modelos
+import 'package:orgalive/Model/Core/firebase/model_firebase.dart';
 import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 import 'package:orgalive/Model/model_users.dart';
 
+// import das telas
+import 'package:orgalive/Screens/home.dart';
+
 class Email extends StatefulWidget {
-  const Email({Key? key}) : super(key: key);
+
+  final int type;
+  const Email({ Key? key, required this.type}) : super(key: key);
 
   @override
   _EmailState createState() => _EmailState();
@@ -14,9 +25,11 @@ class Email extends StatefulWidget {
 
 class _EmailState extends State<Email> {
 
-  // variaveis da tela
+  // controladores de texto
   final TextEditingController _controllerMail = TextEditingController( text: "tiagobruckmann@gmail.com" );
   final TextEditingController _controllerPassword = TextEditingController( text: "teste" );
+
+  // variaveis da tela
   String _mensageError = "";
   bool _passwdVisible = false;
 
@@ -40,19 +53,19 @@ class _EmailState extends State<Email> {
     String mail = _controllerMail.text;
     String password = _controllerPassword.text;
 
-    if( mail.isNotEmpty && mail.contains("@") && ( mail.contains(".com") || mail.contains(".br") ) ) {
+    if( mail.isNotEmpty && mail.contains("@") || ( mail.contains(".com") || mail.contains(".br") ) ) {
 
       if( password.isNotEmpty ) {
-
-        setState(() {
-          _mensageError = "";
-        });
 
         Users users = Users();
         users.mail = mail;
         users.password = password;
 
-        _clientLogin( users );
+        if ( widget.type == 1 ) {
+          _clientRegister( users );
+        } else {
+          _clientLogin( users );
+        }
 
       } else {
         setState(() {
@@ -69,9 +82,72 @@ class _EmailState extends State<Email> {
   }
 
   // Validação com a API e Login
-  _clientLogin( Users users ) async {
+  _clientRegister( Users users ) async {
 
+    FirebaseAuth auth = FirebaseAuth.instance;
 
+    auth.createUserWithEmailAndPassword(
+      email: _controllerMail.text,
+      password: _controllerPassword.text,
+    ).then((firebaseUser) async {
+
+      //Salvar dados do usuário
+      FirebaseFirestore db = FirebaseFirestore.instance;
+
+      await db.collection("users").doc(firebaseUser.user!.uid).set(users.toMap());
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (builder) => const Home(
+            selected: 0,
+          ),
+        ),
+      );
+
+    }).catchError((error) {
+
+      FirebaseCrashlytics.instance.log(error.toString());
+      setState(() {
+        _mensageError = "Erro ao cadastrar usuário, verifique os campos e tente novamente!";
+      });
+
+    });
+  }
+
+  // acessar a conta do usuario
+  _clientLogin( Users users ) {
+
+    FirebaseAuth auth = FirebaseAuth.instance;
+
+    auth.signInWithEmailAndPassword(
+      email: users.mail!,
+      password: users.password!,
+    ).then((firebaseUser){
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (builder) => const Home(
+            selected: 0,
+          ),
+        ),
+      );
+
+    }).catchError((error){
+
+      setState(() {
+        _mensageError = "Erro ao autenticar usuário, verifique seu e-mail e senha e tente novamente!";
+      });
+
+    });
+
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Analytics().sendScreen("login/register");
   }
 
   @override
@@ -146,8 +222,8 @@ class _EmailState extends State<Email> {
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(16),
                   labelText: "Senha",
-                  labelStyle: TextStyle(
-                    color: Theme.of(context).secondaryHeaderColor,
+                  labelStyle: const TextStyle(
+                    color: OrgaliveColors.whiteSmoke,
                   ),
                   filled: true,
                   fillColor: Colors.transparent,
@@ -203,9 +279,11 @@ class _EmailState extends State<Email> {
                   onPressed: () {
                     _validateFields();
                   },
-                  child: const Text(
-                    "Entrar",
-                    style: TextStyle(
+                  child: Text(
+                    ( widget.type == 1 )
+                    ? "Cadastrar"
+                    : "Entrar",
+                    style: const TextStyle(
                       color: OrgaliveColors.greenDefault,
                       fontWeight: FontWeight.w600,
                       fontSize: 18,

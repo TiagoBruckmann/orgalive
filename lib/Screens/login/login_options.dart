@@ -3,10 +3,17 @@ import 'package:flutter/material.dart';
 
 // import dos pacotes
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // import dos modelos
 import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
+
+// import das telas
+import 'package:orgalive/Screens/widgets/message_widget.dart';
 import 'package:orgalive/Screens/login/email.dart';
+import 'package:orgalive/Screens/home.dart';
 
 class LoginOptions extends StatelessWidget {
 
@@ -17,7 +24,97 @@ class LoginOptions extends StatelessWidget {
   Widget build(BuildContext context) {
 
     // logar com google
-    _loginGoogle() {
+    _loginGoogle() async {
+
+      FirebaseAuth auth = FirebaseAuth.instance;
+      User? user;
+
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+
+      final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
+
+      if (googleSignInAccount != null) {
+        final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
+
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleSignInAuthentication.accessToken,
+          idToken: googleSignInAuthentication.idToken,
+        );
+
+        try {
+          final UserCredential userCredential = await auth.signInWithCredential(credential);
+
+          user = userCredential.user;
+
+          if ( type == 1 ) {
+
+            //Salvar dados do usuário
+            FirebaseFirestore db = FirebaseFirestore.instance;
+
+            var data = {
+              "uid": user!.uid,
+              "photo": user.photoURL,
+              "name": user.displayName,
+              "mail": user.email,
+              "password": null,
+              "year_birth": null,
+              "genre": null
+            };
+            await db.collection("users").doc(user.uid).set(data);
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (builder) => const Home(
+                  selected: 0,
+                ),
+              ),
+            );
+
+          } else {
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (builder) => const Home(
+                  selected: 0,
+                ),
+              ),
+            );
+
+          }
+
+        } on FirebaseAuthException catch (e) {
+
+          if (e.code == 'account-exists-with-different-credential') {
+
+            CustomSnackBar(
+              context,
+              "Está conta já existe com diferentes credenciais de login",
+              OrgaliveColors.redDefault,
+            );
+
+          } else if (e.code == 'invalid-credential') {
+
+            CustomSnackBar(
+              context,
+              "Erro ao tentar acessar as credenciais, tente novamente",
+              OrgaliveColors.redDefault,
+            );
+
+          }
+        } catch (e) {
+
+          CustomSnackBar(
+            context,
+            "Erro ao tentar acessar a autenticação do google, tente novamente",
+            OrgaliveColors.redDefault,
+          );
+
+        }
+      }
+
+      return user;
 
     }
 
@@ -26,7 +123,9 @@ class LoginOptions extends StatelessWidget {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (builder) => const Email(),
+          builder: (builder) => Email(
+            type: type,
+          ),
         ),
       );
     }

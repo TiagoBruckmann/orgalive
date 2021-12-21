@@ -3,20 +3,24 @@ import 'package:flutter/material.dart';
 
 // import dos pacotes
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // import dos modelos
 import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 
 // import das telas
+import 'package:orgalive/Screens/profile/widgets/app_bar_profile.dart';
 import 'package:orgalive/Screens/dashboard/categories_essentials.dart';
 import 'package:orgalive/Screens/dashboard/setting_accounts.dart';
 import 'package:orgalive/Screens/profile/credit_card.dart';
-import 'package:orgalive/Screens/profile/widgets/app_bar_profile.dart';
+import 'package:orgalive/Screens/login/info.dart';
 
 class Settings extends StatefulWidget {
 
+  final String userUid;
+  final String photo;
   final String user;
-  const Settings({ Key? key, required this.user }) : super(key: key);
+  const Settings({ Key? key, required this.userUid, required this.photo, required this.user }) : super(key: key);
 
   @override
   _SettingsState createState() => _SettingsState();
@@ -30,7 +34,8 @@ class _SettingsState extends State<Settings> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (builder) => const SettingAccounts(
+        builder: (builder) => SettingAccounts(
+          userUid: widget.userUid,
           value: 150.00,
         ),
       ),
@@ -44,7 +49,9 @@ class _SettingsState extends State<Settings> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (builder) => const CreditCard()
+        builder: (builder) => CreditCard(
+          userUid: widget.userUid,
+        ),
       ),
     );
 
@@ -67,10 +74,26 @@ class _SettingsState extends State<Settings> {
 
   }
 
+  // desconectar
+  _disconnect() {
+
+    FirebaseAuth auth = FirebaseAuth.instance;
+    auth.signOut();
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (builder) => const Info(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBarProfile(
+        userUid: widget.userUid,
+        photo: widget.photo,
         user: widget.user,
         context: context,
       ),
@@ -221,6 +244,36 @@ class _SettingsState extends State<Settings> {
                         ),
                         title: Text(
                           "Tags",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const Divider(
+                      color: OrgaliveColors.bossanova,
+                      thickness: 2,
+                      height: 0,
+                      indent: 16,
+                      endIndent: 16,
+                    ),
+
+                    // desconectar
+                    GestureDetector(
+                      onTap: () {
+                        _disconnect();
+                      },
+                      child: const ListTile(
+                        leading: FaIcon(
+                          FontAwesomeIcons.powerOff,
+                          color: OrgaliveColors.darkGray,
+                          size: 25,
+                        ),
+                        title: Text(
+                          "Desconectar",
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,

@@ -8,6 +8,7 @@ import 'package:graphic/graphic.dart';
 import 'package:intl/intl.dart';
 
 // import dos modelos
+import 'package:orgalive/Model/Core/firebase/model_firebase.dart';
 import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 import 'package:orgalive/Screens/reports/data.dart';
 
@@ -27,6 +28,12 @@ class _DetailReportsState extends State<DetailReports> {
   // filtrar relatorio
   _filterReport() {
 
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Analytics().sendScreen("detail-reports");
   }
 
   @override
