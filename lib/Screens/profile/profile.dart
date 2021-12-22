@@ -37,6 +37,20 @@ class _ProfileState extends State<Profile> {
   String? _uid;
   String? _userName;
   String _genre = "";
+  bool _passwdVisible = false;
+
+  // alterar a visibilidade da senha
+  _changeVisible() {
+    if ( _passwdVisible == false ) {
+      setState(() {
+        _passwdVisible = true;
+      });
+    } else {
+      setState(() {
+        _passwdVisible = false;
+      });
+    }
+  }
 
   _getProfile() {
 
@@ -85,6 +99,7 @@ class _ProfileState extends State<Profile> {
       "mail": _controllerMail.text,
       "year_birth": _controllerYearBirth.text,
       "genre": _genre,
+      "password": _controllerPassword.text
     };
 
     db.collection("users").doc(_uid).update(data);
@@ -264,7 +279,10 @@ class _ProfileState extends State<Profile> {
                       padding: const EdgeInsets.only( bottom: 10 ),
                       child: TextField(
                         controller: _controllerPassword,
-                        keyboardType: TextInputType.number,
+                        keyboardType: TextInputType.text,
+                        obscureText: ( _passwdVisible == false )
+                        ? true
+                        : false,
                         style: const TextStyle(
                           color: OrgaliveColors.whiteSmoke,
                           fontSize: 15,
@@ -277,10 +295,14 @@ class _ProfileState extends State<Profile> {
                             color: OrgaliveColors.whiteSmoke,
                             fontSize: 15,
                           ),
-                          suffixIcon: const Padding(
-                            padding: EdgeInsets.only( top: 10 ),
-                            child: FaIcon(
-                              FontAwesomeIcons.lock,
+                          suffixIcon: TextButton(
+                            onPressed: () {
+                              _changeVisible();
+                            },
+                            child: Icon(
+                              ( _passwdVisible == false )
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                               color: OrgaliveColors.whiteSmoke,
                             ),
                           ),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 // import dos modelos
 import 'package:orgalive/Model/Core/firebase/model_firebase.dart';
@@ -38,15 +39,17 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
     if ( _listAccounts.isEmpty ) {
 
-      var data = await _db.collection("accounts").get();
+      var data = await _db.collection("accounts").where("user_uid", isEqualTo: widget.userUid).get();
 
       List<ModelAccounts> list = [];
 
       for ( var item in data.docs ) {
 
         ModelAccounts modelAccounts = ModelAccounts(
+            item["user_uid"],
             item["name"],
-            item["value"]
+            item["value"],
+            item["document"]
         );
 
         list.add(modelAccounts);
@@ -70,100 +73,67 @@ class _SettingAccountsState extends State<SettingAccounts> {
     MoneyMaskedTextController _controllerValue = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',', initialValue: widget.value);
 
     showDialog(
-        context: context,
-        barrierDismissible: true,
-        builder: (contex) {
-          return Container(
-            padding: const EdgeInsets.fromLTRB(16, 150, 16, 0),
-            child: Center(
-              child: Column(
-                children: [
-                  AlertDialog(
-                    backgroundColor: OrgaliveColors.greyBackground,
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+      context: context,
+      barrierDismissible: true,
+      builder: (contex) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(16, 150, 16, 0),
+          child: Center(
+            child: Column(
+              children: [
+                AlertDialog(
+                  backgroundColor: OrgaliveColors.greyBackground,
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
 
-                        Text(
-                          "Nova conta",
+                      Text(
+                        "Nova conta",
+                        style: TextStyle(
+                          color: OrgaliveColors.silver,
+                          fontSize: 16,
+                        ),
+                      ),
+
+                    ],
+                  ),
+                  content: Column(
+                    children: [
+
+                      const CircleAvatar(
+                        backgroundColor: OrgaliveColors.darkGray,
+                        radius: 25,
+                        child: Icon(
+                          Icons.account_balance,
+                          color: OrgaliveColors.bossanova,
+                          size: 30,
+                        ),
+                      ),
+
+                      const Padding(
+                        padding: EdgeInsets.only( top: 20, bottom: 16 ),
+                        child: Text(
+                          "Cadastre uma nova conta",
                           style: TextStyle(
                             color: OrgaliveColors.silver,
-                            fontSize: 16,
+                            fontSize: 15,
                           ),
                         ),
+                      ),
 
-                      ],
-                    ),
-                    content: Column(
-                      children: [
-
-                        const CircleAvatar(
-                          backgroundColor: OrgaliveColors.darkGray,
-                          radius: 25,
-                          child: Icon(
-                            Icons.account_balance,
-                            color: OrgaliveColors.bossanova,
-                            size: 30,
-                          ),
-                        ),
-
-                        const Padding(
-                          padding: EdgeInsets.only( top: 20, bottom: 16 ),
-                          child: Text(
-                            "Cadastre uma nova conta",
-                            style: TextStyle(
-                              color: OrgaliveColors.silver,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-
-                        Padding(
-                          padding: const EdgeInsets.only( bottom: 20 ),
-                          child: TextField(
-                            controller: _controllerName,
-                            keyboardType: TextInputType.text,
-                            textInputAction: TextInputAction.next,
-                            style: const TextStyle(
-                              color: OrgaliveColors.silver,
-                              fontSize: 20,
-                            ),
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
-                              labelText: "Nome",
-                              filled: true,
-                              labelStyle: const TextStyle(
-                                color: OrgaliveColors.silver,
-                              ),
-                              enabledBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: OrgaliveColors.silver,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: OrgaliveColors.silver,
-                                ),
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        TextField(
-                          controller: _controllerValue,
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.done,
+                      Padding(
+                        padding: const EdgeInsets.only( bottom: 20 ),
+                        child: TextField(
+                          controller: _controllerName,
+                          keyboardType: TextInputType.text,
+                          textInputAction: TextInputAction.next,
                           style: const TextStyle(
                             color: OrgaliveColors.silver,
                             fontSize: 20,
                           ),
                           decoration: InputDecoration(
                             contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
-                            labelText: "Valor",
+                            labelText: "Nome",
                             filled: true,
                             labelStyle: const TextStyle(
                               color: OrgaliveColors.silver,
@@ -184,50 +154,83 @@ class _SettingAccountsState extends State<SettingAccounts> {
                             ),
                           ),
                         ),
-
-                      ],
-                    ),
-
-                    contentPadding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-                    actions: <Widget>[
-
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text(
-                          "Cancelar",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: OrgaliveColors.whiteSmoke,
-                            fontSize: 15,
-                          ),
-                        ),
                       ),
 
-                      TextButton(
-                        onPressed: () {
-                          _validateAccount( _controllerName.text, _controllerValue.text.trim().replaceAll("R\$ ", "") );
-                          Navigator.pop(context);
-                        },
-                        child: const Text(
-                          "Cadastrar!",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: OrgaliveColors.whiteSmoke,
-                            fontSize: 15,
+                      TextField(
+                        controller: _controllerValue,
+                        keyboardType: TextInputType.number,
+                        textInputAction: TextInputAction.done,
+                        style: const TextStyle(
+                          color: OrgaliveColors.silver,
+                          fontSize: 20,
+                        ),
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
+                          labelText: "Valor",
+                          filled: true,
+                          labelStyle: const TextStyle(
+                            color: OrgaliveColors.silver,
+                          ),
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: OrgaliveColors.silver,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: OrgaliveColors.silver,
+                            ),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
                           ),
                         ),
                       ),
 
                     ],
-
                   ),
-                ],
-              ),
+
+                  contentPadding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                  actions: <Widget>[
+
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        "Cancelar",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: OrgaliveColors.whiteSmoke,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+
+                    TextButton(
+                      onPressed: () {
+                        _validateAccount( _controllerName.text, _controllerValue.text.trim().replaceAll("R\$ ", "") );
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        "Cadastrar!",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: OrgaliveColors.whiteSmoke,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+
+                  ],
+
+                ),
+              ],
             ),
-          );
-        }
+          ),
+        );
+      }
     );
   }
 
@@ -251,11 +254,16 @@ class _SettingAccountsState extends State<SettingAccounts> {
   // cadastrar nova conta
   _createAccount( String name, String value ) async {
 
+    DateTime now = DateTime.now();
+    String dateNow = DateFormat('yyyyMMddkkmmss').format(now);
+
     var data = {
       "name": name,
-      "value": value.replaceAll(",", ".")
+      "value": value.replaceAll(",", "."),
+      "user_uid": widget.userUid,
+      "document": dateNow,
     };
-    await _db.collection("accounts").doc(widget.userUid).set(data);
+    await _db.collection("accounts").doc(dateNow).set(data);
 
     CustomSnackBar(
       context,
@@ -268,7 +276,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
   }
 
   // atualizar conta
-  _editValue( String value ) {
+  _editValue( String value, String document ) {
 
     double newValue = double.parse(value.replaceAll(",", "."));
     // configurar o valor da conta
@@ -390,7 +398,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
                       TextButton(
                         onPressed: () {
-                          _updateVale( _controllerValue.text.trim().replaceAll("R\$ ", "") );
+                          _updateVale( _controllerValue.text.trim().replaceAll("R\$ ", ""), document );
                           Navigator.pop(context);
                         },
                         child: const Text(
@@ -416,13 +424,13 @@ class _SettingAccountsState extends State<SettingAccounts> {
   }
 
   // atualizar o valor da cotna
-  _updateVale( String value ) {
+  _updateVale( String value, String document ) {
 
     var data = {
       "value": value.replaceAll(",", ".")
     };
 
-    _db.collection("accounts").doc(widget.userUid).update(data);
+    _db.collection("accounts").doc(document).update(data);
 
     CustomSnackBar( context, "Conta atualizada com sucesso", OrgaliveColors.greenDefault );
 
@@ -646,7 +654,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
                                       GestureDetector(
                                         onTap: () {
-                                          _editValue( modelAccounts.value! );
+                                          _editValue( modelAccounts.value!, modelAccounts.document! );
                                         },
                                         child: const FaIcon(
                                           FontAwesomeIcons.edit,

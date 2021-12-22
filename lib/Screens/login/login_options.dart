@@ -45,6 +45,7 @@ class LoginOptions extends StatelessWidget {
           final UserCredential userCredential = await auth.signInWithCredential(credential);
 
           user = userCredential.user;
+          print("user => $user");
 
           if ( type == 1 ) {
 

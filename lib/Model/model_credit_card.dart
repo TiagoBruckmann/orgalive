@@ -1,14 +1,15 @@
 class ModelCreditCard {
 
-  String? uid;
   String? type;
-  int? number;
+  String? number;
   String? valid;
-  int? cvv;
+  String? cvv;
+  String? uid;
+  String? document;
 
-  ModelCreditCard( this.type, this.number, this.valid, this.cvv );
+  ModelCreditCard( this.type, this.number, this.valid, this.cvv, this.uid, this.document );
 
-  ModelCreditCard.complete( this.type, this.number, this.valid, this.cvv );
+  ModelCreditCard.complete( this.type, this.number, this.valid, this.cvv, this.uid, this.document );
 
   factory ModelCreditCard.fromJson(Map<String, dynamic> json) {
     return ModelCreditCard(
@@ -16,6 +17,8 @@ class ModelCreditCard {
       json["number"],
       json["valid"],
       json["cvv"],
+      json["user_uid"],
+      json["document"]
     );
   }
 

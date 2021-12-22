@@ -1,5 +1,6 @@
 // imports nativos do flutter
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 // import dos pacotes
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -9,6 +10,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:orgalive/Model/Core/firebase/model_firebase.dart';
 import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 import 'package:orgalive/Model/model_credit_card.dart';
+
+// import das telas
+import 'package:orgalive/Screens/profile/create_credit_card.dart';
 
 class CreditCard extends StatefulWidget {
 
@@ -31,9 +35,11 @@ class _CreditCardState extends State<CreditCard> {
   // buscar contas
   Future<List<ModelCreditCard>> _getCards() async {
 
-    if ( _listCards.isEmpty ) {
+    if ( _listCards.isEmpty && _isLoading == true ) {
 
-      var data = await _db.collection("credit_card").get();
+      var data = await _db.collection("credit_card")
+        .where("user_uid", isEqualTo: widget.userUid)
+        .get();
 
       List<ModelCreditCard> list = [];
 
@@ -44,6 +50,8 @@ class _CreditCardState extends State<CreditCard> {
           item["number"],
           item["valid"],
           item["cvv"],
+          item["user_uid"],
+          item["document"]
         );
 
         list.add(modelCreditCard);
@@ -57,6 +65,24 @@ class _CreditCardState extends State<CreditCard> {
     }
 
     return _listCards;
+  }
+
+  _newCreditCard() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (builder) => CreateCreditCard(
+          userUid: widget.userUid,
+        ),
+      ),
+    ).then( _onGoBack );
+  }
+
+  // forca o recarregamento ao voltar para essa tela
+  FutureOr _onGoBack( dynamic value ) {
+    setState(() {
+      _refresh();
+    });
   }
 
   // recarregamento da tela
@@ -80,11 +106,29 @@ class _CreditCardState extends State<CreditCard> {
     super.initState();
     Analytics().sendScreen("credit-card");
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Cartões de crédito"),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+
+            const Text("Cartões de credito"),
+
+            // novo cartao
+            GestureDetector(
+              onTap: () {
+                _newCreditCard();
+              },
+              child: const FaIcon(
+                FontAwesomeIcons.plus,
+              ),
+            ),
+
+          ],
+        ),
       ),
 
       body: RefreshIndicator(
@@ -167,68 +211,75 @@ class _CreditCardState extends State<CreditCard> {
 
                 ModelCreditCard modelCreditCard = _listCards[index];
 
-                return Card(
-                  color: OrgaliveColors.greyDefault,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular( 10 ),
-                  ),
-                  child: ListTile(
-                    leading: const FaIcon(
-                      FontAwesomeIcons.solidCreditCard,
-                      color: OrgaliveColors.darkGray,
-                      size: 25,
+                return Padding(
+                  padding: const EdgeInsets.only( top: 6 ),
+                  child: Card(
+                    color: OrgaliveColors.greyDefault,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular( 10 ),
                     ),
-                    title: Text(
-                      "${modelCreditCard.number}",
-                      style: const TextStyle(
-                        color: OrgaliveColors.whiteSmoke,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
+                    child: ListTile(
+                      leading: FaIcon(
+                        ( modelCreditCard.type == "Master" )
+                        ? FontAwesomeIcons.ccMastercard
+                        : ( modelCreditCard.type == "Visa" )
+                        ? FontAwesomeIcons.ccVisa
+                        : FontAwesomeIcons.solidCreditCard,
+                        color: OrgaliveColors.darkGray,
+                        size: 30,
                       ),
-                    ),
-                    subtitle: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-
-                        Text.rich(
-                          TextSpan(
-                            text: "Validade: ",
-                            style: const TextStyle(
-                              color: OrgaliveColors.silver,
-                              fontSize: 15,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: "${modelCreditCard.valid}",
-                                style: const TextStyle(
-                                  color: OrgaliveColors.whiteSmoke,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ],
-                          ),
+                      title: Text(
+                        "${modelCreditCard.number}",
+                        style: const TextStyle(
+                          color: OrgaliveColors.whiteSmoke,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
                         ),
+                      ),
+                      subtitle: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
 
-                        Text.rich(
-                          TextSpan(
-                            text: "CVV: ",
-                            style: const TextStyle(
-                              color: OrgaliveColors.silver,
-                              fontSize: 15,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: "${modelCreditCard.cvv}",
-                                style: const TextStyle(
-                                  color: OrgaliveColors.whiteSmoke,
-                                  fontSize: 18,
-                                ),
+                          Text.rich(
+                            TextSpan(
+                              text: "Validade: ",
+                              style: const TextStyle(
+                                color: OrgaliveColors.silver,
+                                fontSize: 15,
                               ),
-                            ],
+                              children: [
+                                TextSpan(
+                                  text: "${modelCreditCard.valid}",
+                                  style: const TextStyle(
+                                    color: OrgaliveColors.whiteSmoke,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
 
-                      ],
+                          Text.rich(
+                            TextSpan(
+                              text: "CVV: ",
+                              style: const TextStyle(
+                                color: OrgaliveColors.silver,
+                                fontSize: 15,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: "${modelCreditCard.cvv}",
+                                  style: const TextStyle(
+                                    color: OrgaliveColors.whiteSmoke,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                        ],
+                      ),
                     ),
                   ),
                 );
