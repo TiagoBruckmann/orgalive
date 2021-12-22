@@ -1,9 +1,9 @@
 // imports nativos do flutter
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 // import dos pacotes
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // import dos modelos
 import 'package:orgalive/Model/Core/firebase/model_firebase.dart';
@@ -13,6 +13,7 @@ import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
 import 'package:orgalive/Screens/dashboard/categories_essentials.dart';
 import 'package:orgalive/Screens/dashboard/widget/app_bar_widget.dart';
 import 'package:orgalive/Screens/dashboard/personalize.dart';
+import 'package:orgalive/Screens/dashboard/more_info.dart';
 import 'package:orgalive/Screens/home.dart';
 
 class Dashboard extends StatefulWidget {
@@ -65,8 +66,13 @@ class _DashboardState extends State<Dashboard> {
   }
 
   // mais informações
-  _moreInfo() {
-
+  _goToMoreInfo() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (builder) => const MoreInfo()
+      ),
+    );
   }
 
   // categorias
@@ -299,7 +305,7 @@ class _DashboardState extends State<Dashboard> {
 
                         GestureDetector(
                           onTap: () {
-                            _moreInfo();
+                            _goToMoreInfo();
                           },
                           child: Padding(
                             padding: const EdgeInsets.only( right: 16, top: 10, ),

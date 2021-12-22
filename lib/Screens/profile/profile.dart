@@ -130,7 +130,7 @@ class _ProfileState extends State<Profile> {
                 _verifyProfile();
               },
               child: const Text("Salvar"),
-            )
+            ),
           ],
         ),
       ),

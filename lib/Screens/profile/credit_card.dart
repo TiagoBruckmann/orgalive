@@ -98,7 +98,6 @@ class _CreditCardState extends State<CreditCard> {
       });
 
     }
-
   }
 
   @override

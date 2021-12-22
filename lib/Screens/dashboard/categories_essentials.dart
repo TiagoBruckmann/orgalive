@@ -16,6 +16,7 @@ class CategoriesEssentials extends StatefulWidget {
 
 class _CategoriesEssentialsState extends State<CategoriesEssentials> {
 
+  /*
   final List<ModelCategories> _listCategories = [
     ModelCategories(
         id: 1,
@@ -46,8 +47,11 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
       icon: "graduationCap",
       name: "Educação",
       selected: true,
+      valueSpen: true,
+      selected: true,
     ),
   ];
+   */
 
   _saveCategories() {
 
@@ -67,9 +71,9 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
       ),
 
       body: ListView.builder(
-        itemCount: _listCategories.length,
+        itemCount: 0, // _listCategories.length,
         itemBuilder: ( context, index ) {
-          ModelCategories modelCategories = _listCategories[index];
+          // ModelCategories modelCategories = _listCategories[index];
 
           return Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
@@ -112,7 +116,7 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
                         children: [
 
                           Text(
-                            "${modelCategories.name}",
+                            "teste", // "${modelCategories.name}",
                             style: const TextStyle(
                                 color: OrgaliveColors.whiteSmoke,
                                 fontWeight: FontWeight.w500,
@@ -122,13 +126,13 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
 
                           Checkbox(
                             activeColor: Theme.of(context).secondaryHeaderColor,
-                            value: modelCategories.selected,
+                            value: true, // modelCategories.selected,
                             onChanged: (bool? value) {
                               setState(() {
                                 if ( value == true ) {
-                                  modelCategories.selected = true;
+                                  // modelCategories.selected = true;
                                 } else {
-                                  modelCategories.selected = false;
+                                  // modelCategories.selected = false;
                                 }
                               });
                             },

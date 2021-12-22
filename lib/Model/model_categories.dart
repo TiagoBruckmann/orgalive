@@ -1,18 +1,24 @@
 class ModelCategories {
 
-  int? id;
+  String? uid;
   String? icon;
   String? name;
-  bool? selected;
+  String? selected;
+  String? valueSpending;
+  String? valueLimit;
 
-  ModelCategories({ this.id, this.icon, this.name, this.selected });
+  ModelCategories( this.uid, this.icon, this.name, this.selected, this.valueSpending, this.valueLimit );
+
+  ModelCategories.complete( this.uid, this.icon, this.name, this.selected, this.valueSpending, this.valueLimit );
 
   factory ModelCategories.fromJson(Map<String, dynamic> json) {
     return ModelCategories(
-      id: json["id"],
-      icon: json["icon"],
-      name: json["name"],
-      selected: json["selected"],
+      json["user_uid"],
+      json["icon"],
+      json["name"],
+      json["selected"],
+      json["value_spending"],
+      json["value_limit"]
     );
   }
 
