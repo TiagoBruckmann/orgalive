@@ -19,9 +19,15 @@ class OrgaliveColors {
   // branco
   static const Color whiteSmoke = Color(0xFFF5F5F5);
   static const Color gainsboro = Color(0xFFE0E0E0);
-  static const Color solitude = Color(0xffe8f0fe);
+  static const Color solitude = Color(0xffE8F0FE);
 
   // rosa
-  static const Color fuchsia = Color(0xffd242d2);
+  static const Color fuchsia = Color(0xffD242D2);
+
+  // laranja
+  static const Color casaBlanca = Color(0xffE7A94E);
+
+  // azul
+  static const Color freeSpeenchBlue = Color(0xff3D3DDB);
 
 }
