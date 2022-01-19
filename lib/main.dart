@@ -6,10 +6,10 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 // import dos modelos
-import 'package:orgalive/Model/Core/styles/orgalive_colors.dart';
+import 'package:orgalive/model/core/styles/orgalive_colors.dart';
 
 // import das telas
-import 'package:orgalive/Screens/splash_screen.dart';
+import 'package:orgalive/screens/splash_screen.dart';
 
 final ThemeData defaultTheme = ThemeData(
   primaryColor: OrgaliveColors.greyDefault,
