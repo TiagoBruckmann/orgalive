@@ -36,6 +36,7 @@ class _ProfileState extends State<Profile> {
   String? _uid;
   String? _userName;
   bool _passwdVisible = false;
+  String? _password;
 
   // variaveis do banco
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -68,6 +69,7 @@ class _ProfileState extends State<Profile> {
         _controllerName.text = item["name"];
         _controllerMail.text = item["mail"];
         _controllerYearBirth.text = item["year_birth"];
+        _password = item["password"];
       });
     }
 
@@ -100,11 +102,17 @@ class _ProfileState extends State<Profile> {
 
     FirebaseFirestore db = FirebaseFirestore.instance;
 
+    String? password;
+    if ( _controllerPassword.text.trim().isNotEmpty ) {
+      password = _controllerPassword.text;
+    } else {
+      password = _password;
+    }
     var data = {
       "name": _controllerName.text,
       "mail": _controllerMail.text,
       "year_birth": _controllerYearBirth.text,
-      "password": _controllerPassword.text
+      "password": password,
     };
 
     db.collection("users").doc(_uid).update(data);

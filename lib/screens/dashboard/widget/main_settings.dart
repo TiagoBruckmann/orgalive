@@ -1,8 +1,12 @@
 // imports nativos do flutter
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-// import dos pacotes
+// import dos modelos
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+
+// import dos pacotes
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // import das telas
 import 'package:orgalive/screens/dashboard/setting_accounts.dart';
@@ -19,7 +23,32 @@ class MainSettings extends StatefulWidget {
 class _MainSettingsState extends State<MainSettings> {
 
   // variaveis da tela
+  String? _account;
+  num? _value;
   bool _valueVisible = false;
+
+  // variaveis do banco
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  // buscar contas
+  _getAccounts() async {
+
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? userData = auth.currentUser;
+
+    var data = await _db.collection("accounts").where("user_uid", isEqualTo: userData!.uid).get();
+    for ( var item in data.docs ) {
+
+      if ( item["default"] == true ) {
+
+        setState(() {
+          _account = item["name"];
+          String value = item["value"];
+          _value = num.parse(value);
+        });
+      }
+    }
+  }
 
   // alterar a visibilidade do valor
   _changeVisibility() {
@@ -49,6 +78,12 @@ class _MainSettingsState extends State<MainSettings> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _getAccounts();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 130, 16, 5),
@@ -75,7 +110,7 @@ class _MainSettingsState extends State<MainSettings> {
 
                   Text(
                     ( _valueVisible == false )
-                    ? "R\$ 1.514,49"
+                    ? "R\$ $_value"
                     : "R\$  - - - - - -",
                     style: const TextStyle(
                       color: OrgaliveColors.whiteSmoke,
@@ -137,9 +172,9 @@ class _MainSettingsState extends State<MainSettings> {
                   size: 30,
                 ),
               ),
-              title: const Text(
-                "Conta inicial",
-                style: TextStyle(
+              title: Text(
+                "$_account",
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
                   fontSize: 18,
@@ -159,7 +194,7 @@ class _MainSettingsState extends State<MainSettings> {
 
                   Text(
                     ( _valueVisible == false )
-                    ? "R\$ 1.514,49"
+                    ? "R\$ $_value"
                     : "R\$  - - - - - -",
                     style: const TextStyle(
                       color: OrgaliveColors.blueDefault,

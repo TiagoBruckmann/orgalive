@@ -50,6 +50,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
           item["name"],
           item["value"],
           item["document"],
+          item["default"],
         );
 
         list.add(modelAccounts);

@@ -26,8 +26,8 @@ class Email extends StatefulWidget {
 class _EmailState extends State<Email> {
 
   // controladores de texto
-  final TextEditingController _controllerMail = TextEditingController( text: "tiagobruckmann@gmail.com" );
-  final TextEditingController _controllerPassword = TextEditingController( text: "teste" );
+  final TextEditingController _controllerMail = TextEditingController( text: "tiago_bruck@outlook.com.br" );
+  final TextEditingController _controllerPassword = TextEditingController( text: "teste1" );
 
   // variaveis da tela
   String _mensageError = "";
@@ -55,14 +55,14 @@ class _EmailState extends State<Email> {
 
     if( mail.isNotEmpty && mail.contains("@") || ( mail.contains(".com") || mail.contains(".br") ) ) {
 
-      if( password.isNotEmpty ) {
+      if( password.isNotEmpty && password.length > 5 ) {
 
         Users users = Users();
         users.mail = mail;
         users.password = password;
 
         if ( widget.type == 1 ) {
-          _clientRegister( users );
+          _clientRegister();
         } else {
           _clientLogin( users );
         }
@@ -82,7 +82,7 @@ class _EmailState extends State<Email> {
   }
 
   // Validação com a API e Login
-  _clientRegister( Users users ) async {
+  _clientRegister() async {
 
     FirebaseAuth auth = FirebaseAuth.instance;
 
@@ -94,15 +94,25 @@ class _EmailState extends State<Email> {
       //Salvar dados do usuário
       FirebaseFirestore db = FirebaseFirestore.instance;
 
+      Users users = Users(
+        name: _controllerMail.text,
+        mail: _controllerMail.text,
+        password: _controllerPassword.text,
+        uid: firebaseUser.user!.uid,
+        yearBirth: "",
+        photo: "",
+      );
+
       await db.collection("users").doc(firebaseUser.user!.uid).set(users.toMap());
 
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (builder) => const Home(
             selected: 0,
           ),
         ),
+            (route) => false,
       );
 
     }).catchError((error) {
@@ -125,13 +135,14 @@ class _EmailState extends State<Email> {
       password: users.password!,
     ).then((firebaseUser){
 
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (builder) => const Home(
             selected: 0,
           ),
         ),
+            (route) => false,
       );
 
     }).catchError((error){

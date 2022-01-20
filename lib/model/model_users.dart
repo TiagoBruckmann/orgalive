@@ -12,10 +12,12 @@ class Users {
   Map<String, dynamic> toMap() {
 
     Map<String, dynamic> map = {
+      "uid": uid,
       "photo" : photo,
       "name" : name,
       "mail" : mail,
-      "yearBirth" : yearBirth,
+      "password": password,
+      "year_birth" : yearBirth,
     };
 
     return map;

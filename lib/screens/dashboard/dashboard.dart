@@ -1,4 +1,5 @@
 // imports nativos do flutter
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 // import dos pacotes
@@ -31,15 +32,36 @@ class _DashboardState extends State<Dashboard> {
   String _photo = "";
   String _userUid = "";
 
+  // variaveis do banco
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
   // busca a hora atual
   _getInfos() async {
 
     FirebaseAuth auth = FirebaseAuth.instance;
     User? userData = auth.currentUser;
 
-    _userUid = userData!.uid;
-    _user = userData.displayName!;
-    _photo = userData.photoURL!;
+    String? displayName;
+    String? photoUrl;
+    if ( userData!.displayName == null ) {
+
+      var data = await _db.collection("users").where("uid", isEqualTo: userData.uid).get();
+
+      for ( var item in data.docs ) {
+        displayName = item["name"];
+        photoUrl = item["photo"];
+      }
+
+    } else {
+      displayName = userData.displayName!;
+      photoUrl = userData.photoURL!;
+    }
+
+    setState(() {
+      _userUid = userData.uid;
+      _user = displayName!;
+      _photo = photoUrl!;
+    });
 
     final TimeOfDay currentTime = TimeOfDay.now();
 
@@ -92,7 +114,7 @@ class _DashboardState extends State<Dashboard> {
       context,
       MaterialPageRoute(
         builder: (builder) => const Personalize(),
-      )
+      ),
     );
   }
 

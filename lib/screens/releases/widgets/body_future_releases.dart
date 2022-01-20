@@ -16,6 +16,8 @@ import 'package:intl/intl.dart';
 import 'package:orgalive/model/core/model_choices.dart' as model_choices;
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
 import 'package:orgalive/model/functions/accounts/account.dart';
+import 'package:orgalive/model/model_accounts.dart';
+import 'package:orgalive/screens/home.dart';
 
 // import das telas
 import 'package:orgalive/screens/widgets/message_widget.dart';
@@ -48,10 +50,40 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
   String _installments = "2";
   String _nameInstallments = "parcelada";
   final String _category = "lanche";
-  final String _accountId = "20211221224339";
+  String? _accountId;
+  String? _oldValue;
 
   // variaveis do banco
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  Future<List<ModelAccounts>>_getAccounts() async {
+
+    List<ModelAccounts> listAccounts = [];
+
+    var data = await _db.collection("accounts").where("user_uid", isEqualTo: widget.userUid).get();
+
+    List<ModelAccounts> list = [];
+
+    for ( var item in data.docs ) {
+
+      ModelAccounts modelAccounts = ModelAccounts(
+        item["user_uid"],
+        item["name"],
+        item["value"],
+        item["document"],
+        item["default"],
+      );
+
+      list.add(modelAccounts);
+    }
+
+    setState(() {
+      listAccounts.addAll(list);
+    });
+
+    return listAccounts;
+
+  }
 
   // detalhes do documento
   final _picker = ImagePicker();
@@ -84,7 +116,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
     return snackBar;
   }
 
-  // seleciona a imagem do computador
+  // seleciona a imagem do comprovante
   Future _selectImage( String imageSource ) async {
     try {
 
@@ -172,19 +204,19 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
     String type;
     if ( widget.screenActive == 1 ) {
 
-      num rmString = num.parse(_controllerExpense.text.replaceAll("R\$ ", ""));
+      num rmString = num.parse(_controllerExpense.text.replaceAll("R\$ ", "").replaceAll(",", "."));
       value = rmString;
       type = "Despesa";
 
     } else if ( widget.screenActive == 2 ) {
 
-      num rmString = num.parse(_controllerProfit.text.replaceAll("R\$ ", ""));
+      num rmString = num.parse(_controllerProfit.text.replaceAll("R\$ ", "").replaceAll(",", "."));
       value = rmString;
       type = "Lucro";
 
     } else {
 
-      num rmString = num.parse(_controllerTransfer.text.replaceAll("R\$ ", ""));
+      num rmString = num.parse(_controllerTransfer.text.replaceAll("R\$ ", "").replaceAll(",", "."));
       value = rmString;
       type = "Transferência";
 
@@ -206,6 +238,37 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
 
     await _db.collection("releases").doc(dateNow).set(data);
 
+    _updateAccount( value );
+  }
+
+  // atualizar o valor da conta
+  _updateAccount( value ) async {
+
+    num oldValue = num.parse(_oldValue!);
+
+    num newValue;
+    if ( widget.screenActive == 1 ) {
+      newValue = AccountFunction().decrementValue(oldValue, value);
+    } else {
+      newValue = AccountFunction().sumValue(oldValue, value);
+    }
+
+    var data = {
+      "value": newValue.toString().replaceAll(",", ".")
+    };
+
+    _db.collection("accounts").doc(_accountId!.toString()).update(data);
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (builder) => const Home(
+          selected: 0,
+        ),
+      ),
+      (route) => false,
+    );
+
     CustomSnackBar(
       context,
       ( widget.screenActive == 1 )
@@ -215,30 +278,6 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
       : "Transferência cadastrada com sucesso",
       OrgaliveColors.greenDefault,
     );
-
-    _updateAccount( value );
-  }
-
-  // atualizar o valor da conta
-  _updateAccount( value ) async {
-
-    final response = await _db.collection("accounts").where("document", isEqualTo: _accountId).get();
-
-    String? dataValue;
-    for ( var item in response.docs ) {
-
-      dataValue = item["value"];
-    }
-    num oldValue = num.parse(dataValue.toString());
-
-    num newValue = AccountFunction().sumValue(oldValue, value);
-
-    var data = {
-      "value": newValue.toString().replaceAll(",", ".")
-    };
-
-    _db.collection("accounts").doc(_accountId).update(data);
-
   }
 
   @override
@@ -452,45 +491,118 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
           ),
 
           // pagar com
-          ListTile(
-            title: const Text(
-              "Pagar com",
-              style: TextStyle(
-                color: OrgaliveColors.silver,
-                fontSize: 16,
+          Padding(
+            padding: const EdgeInsets.symmetric( horizontal: 16, vertical: 12 ),
+            child: FindDropdown<ModelAccounts>(
+              backgroundColor: OrgaliveColors.greyBackground,
+              showSearchBox: false,
+              onFind: (items) => _getAccounts(),
+              label: "Pagar com",
+              labelStyle: const TextStyle(
+                color: OrgaliveColors.whiteSmoke,
               ),
-            ),
-
-            subtitle: Row(
-              children: [
-
-                Card(
-                  color: OrgaliveColors.bossanova,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.all(7),
-                    child: Icon(
-                      Icons.home,
-                      color: OrgaliveColors.silver,
-                    ),
-                  ),
-                ),
-
-                const Padding(
-                  padding: EdgeInsets.only( left: 10, ),
+              titleStyle: const TextStyle(
+                color: OrgaliveColors.whiteSmoke,
+              ),
+              errorBuilder: ( context, item ) {
+                return const Center(
                   child: Text(
-                    "Conta inicial",
+                    "Nenhuma conta encontrada",
                     style: TextStyle(
                       color: OrgaliveColors.whiteSmoke,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 18,
+                      fontSize: 15,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              },
+              emptyBuilder: ( item ) {
+                return const Center(
+                  child: Text(
+                    "Nenhuma conta encontrada",
+                    style: TextStyle(
+                      color: OrgaliveColors.whiteSmoke,
+                      fontSize: 15,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              },
+              onChanged: ( item ) {
+                _accountId = item!.name;
+                _oldValue = item.value;
+                // _category = item.name;
+              },
+              dropdownBuilder: (BuildContext context, item) {
+                return Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: OrgaliveColors.silver,
+                    ),
+                    borderRadius: BorderRadius.circular(5),
+                    color: OrgaliveColors.greyBackground,
+                  ),
+                  child: ListTile(
+                    leading: const CircleAvatar(
+                      backgroundColor: OrgaliveColors.bossanova,
+                      child: Icon(
+                        Icons.home,
+                        color: OrgaliveColors.silver,
+                      ),
+                    ),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          (item == null)
+                              ? "Selecione uma conta"
+                              : "${item.name}",
+                          style: const TextStyle(
+                            color: OrgaliveColors.whiteSmoke,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
+                );
+              },
 
-              ],
+              // constroi a exibição das categorias
+              dropdownItemBuilder: ( BuildContext context, item, bool isSelected ) {
+                return Container(
+                  decoration: !isSelected
+                      ? null
+                      : BoxDecoration(
+                    border: Border.all(
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    color: OrgaliveColors.bossanova,
+                  ),
+                  child: Card(
+                    color: OrgaliveColors.greyDefault,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: ListTile(
+                      selected: isSelected,
+                      leading: const CircleAvatar(
+                        backgroundColor: OrgaliveColors.bossanova,
+                        child: Icon(
+                          Icons.home,
+                          color: OrgaliveColors.silver,
+                        ),
+                      ),
+                      title: Text(
+                        "${item.name}",
+                        style: const TextStyle(
+                          color: OrgaliveColors.whiteSmoke,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
 
