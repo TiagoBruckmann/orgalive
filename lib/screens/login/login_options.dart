@@ -56,9 +56,8 @@ class LoginOptions extends StatelessWidget {
               "photo": user.photoURL,
               "name": user.displayName,
               "mail": user.email,
-              "password": null,
+              "password": "teste",
               "year_birth": null,
-              "genre": null
             };
             await db.collection("users").doc(user.uid).set(data);
 

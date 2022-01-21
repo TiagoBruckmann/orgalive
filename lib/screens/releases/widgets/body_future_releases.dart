@@ -247,10 +247,10 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
     num oldValue = num.parse(_oldValue!);
 
     num newValue;
-    if ( widget.screenActive == 1 ) {
-      newValue = AccountFunction().decrementValue(oldValue, value);
-    } else {
+    if ( widget.screenActive == 2 ) {
       newValue = AccountFunction().sumValue(oldValue, value);
+    } else {
+      newValue = AccountFunction().decrementValue(oldValue, value);
     }
 
     var data = {

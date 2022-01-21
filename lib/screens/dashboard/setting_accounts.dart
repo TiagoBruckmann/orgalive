@@ -258,11 +258,18 @@ class _SettingAccountsState extends State<SettingAccounts> {
     DateTime now = DateTime.now();
     String dateNow = DateFormat('yyyyMMddkkmmss').format(now);
 
+    bool? defaultAccont;
+    if ( _listAccounts.isEmpty ) {
+      defaultAccont = true;
+    } else {
+      defaultAccont = false;
+    }
     var data = {
       "name": name,
       "value": value.replaceAll(",", "."),
       "user_uid": widget.userUid,
       "document": dateNow,
+      "default": defaultAccont,
     };
     await _db.collection("accounts").doc(dateNow).set(data);
 
