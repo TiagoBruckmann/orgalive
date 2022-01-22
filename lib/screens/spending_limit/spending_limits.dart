@@ -56,12 +56,14 @@ class _SpendingLimitsState extends State<SpendingLimits> {
       for ( var item in data.docs ) {
 
         ModelCategories modelCategories = ModelCategories(
-            item["user_uid"],
-            item["icon"],
-            item["name"],
-            item["selected"],
-            item["value_spending"],
-            item["value_limit"]
+          item["user_uid"],
+          item["icon"],
+          item["name"],
+          /*
+          item["selected"],
+          item["value_spending"],
+          item["value_limit"],
+          */
         );
 
         list.add(modelCategories);

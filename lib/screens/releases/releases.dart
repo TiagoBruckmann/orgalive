@@ -71,7 +71,6 @@ class _ReleasesState extends State<Releases> {
 
           list.add(modelRelease);
         }
-
       }
 
       setState(() {

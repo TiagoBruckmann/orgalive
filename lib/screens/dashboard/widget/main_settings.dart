@@ -24,7 +24,7 @@ class _MainSettingsState extends State<MainSettings> {
 
   // variaveis da tela
   String? _account;
-  num? _value;
+  String? _value;
   bool _valueVisible = false;
 
   // variaveis do banco
@@ -44,7 +44,7 @@ class _MainSettingsState extends State<MainSettings> {
         setState(() {
           _account = item["name"];
           String value = item["value"];
-          _value = num.parse(value);
+          _value = value;
         });
       }
     }
@@ -71,7 +71,6 @@ class _MainSettingsState extends State<MainSettings> {
       MaterialPageRoute(
         builder: (builder) => SettingAccounts(
           userUid: widget.userUid,
-          value: 150.00,
         ),
       ),
     );

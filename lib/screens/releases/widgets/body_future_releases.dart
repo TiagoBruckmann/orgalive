@@ -17,6 +17,7 @@ import 'package:orgalive/model/core/model_choices.dart' as model_choices;
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
 import 'package:orgalive/model/functions/accounts/account.dart';
 import 'package:orgalive/model/model_accounts.dart';
+import 'package:orgalive/model/model_categories.dart';
 import 'package:orgalive/screens/home.dart';
 
 // import das telas
@@ -49,14 +50,15 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
   String _nameTimeExpense = "fixa";
   String _installments = "2";
   String _nameInstallments = "parcelada";
-  final String _category = "lanche";
+  String? _category;
   String? _accountId;
   String? _oldValue;
 
   // variaveis do banco
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Future<List<ModelAccounts>>_getAccounts() async {
+  // buscar as contas cadastradas do usuario
+  Future<List<ModelAccounts>> _getAccounts() async {
 
     List<ModelAccounts> listAccounts = [];
 
@@ -82,6 +84,41 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
     });
 
     return listAccounts;
+
+  }
+
+  // buscar todas as categorias de servicos
+  Future<List<ModelCategories>> _getCategories() async {
+
+    List<ModelCategories> listCategories = [];
+
+    var data = await _db.collection("categories").get();
+
+    List<ModelCategories> list = [];
+
+    print("data.docs => ${data.docs}");
+    for ( var item in data.docs ) {
+
+      print("item => ${item["icon"]}");
+      ModelCategories modelCategories = ModelCategories(
+        item["uid"],
+        item["name"],
+        item["icon"],
+        /*
+        item["document"],
+        item["default"],
+        item["default"],
+         */
+      );
+
+      list.add(modelCategories);
+    }
+
+    setState(() {
+      listCategories.addAll(list);
+    });
+
+    return listCategories;
 
   }
 
@@ -201,22 +238,26 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
     }
 
     num value;
+    String valueFormated;
     String type;
     if ( widget.screenActive == 1 ) {
 
-      num rmString = num.parse(_controllerExpense.text.replaceAll("R\$ ", "").replaceAll(",", "."));
+      valueFormated = _controllerExpense.text.replaceAll("R\$ ", "");
+      num rmString = num.parse(_controllerExpense.text.replaceAll("R\$ ", "").replaceAll(".", "").replaceAll(",", "."));
       value = rmString;
       type = "Despesa";
 
     } else if ( widget.screenActive == 2 ) {
 
-      num rmString = num.parse(_controllerProfit.text.replaceAll("R\$ ", "").replaceAll(",", "."));
+      valueFormated = _controllerProfit.text.replaceAll("R\$ ", "");
+      num rmString = num.parse(_controllerProfit.text.replaceAll("R\$ ", "").replaceAll(".", "").replaceAll(",", "."));
       value = rmString;
       type = "Lucro";
 
     } else {
 
-      num rmString = num.parse(_controllerTransfer.text.replaceAll("R\$ ", "").replaceAll(",", "."));
+      valueFormated = _controllerTransfer.text.replaceAll("R\$ ", "");
+      num rmString = num.parse(_controllerTransfer.text.replaceAll("R\$ ", "").replaceAll(".", "").replaceAll(",", "."));
       value = rmString;
       type = "Transferência";
 
@@ -225,15 +266,30 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
     DateTime now = DateTime.now();
     String dateNow = DateFormat('yyyyMMddkkmmss').format(now);
 
+    int? status;
+    if ( _daySelected!.month >= now.month && _daySelected!.day >= now.day ) {
+
+      if ( _daySelected!.month > now.month ) {
+        status = 0;
+      } else if ( _daySelected!.month == now.month && _daySelected!.day > now.day ) {
+        status = 0;
+      } else if ( _daySelected!.month == now.month && _daySelected!.day == now.day ) {
+        status = 1;
+      }
+    } else {
+      status = 1;
+    }
+
     var data = {
       "user_uid": widget.userUid,
       "document": dateNow,
-      "value": value,
+      "value": valueFormated,
       "description": _controllerDescription.text,
       "type": type,
       "category": _category,
       "account_id": _accountId,
       "date": _daySelected.toString(),
+      "Status": status,
     };
 
     await _db.collection("releases").doc(dateNow).set(data);
@@ -242,11 +298,11 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
   }
 
   // atualizar o valor da conta
-  _updateAccount( value ) async {
+  _updateAccount( num value ) async {
 
-    num oldValue = num.parse(_oldValue!);
+    num oldValue = num.parse(_oldValue!.replaceAll(".", "").replaceAll(",", "."));
 
-    num newValue;
+    String newValue;
     if ( widget.screenActive == 2 ) {
       newValue = AccountFunction().sumValue(oldValue, value);
     } else {
@@ -254,7 +310,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
     }
 
     var data = {
-      "value": newValue.toString().replaceAll(",", ".")
+      "value": newValue,
     };
 
     _db.collection("accounts").doc(_accountId!.toString()).update(data);
@@ -273,7 +329,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
       context,
       ( widget.screenActive == 1 )
       ? "Despesa cadastrada com sucesso"
-      : ( widget.screenActive == 1 )
+      : ( widget.screenActive == 2 )
       ? "Lucro cadastrado com sucesso"
       : "Transferência cadastrada com sucesso",
       OrgaliveColors.greenDefault,
@@ -373,16 +429,10 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
           // listagem das categorias
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-            child: FindDropdown(
+            child: FindDropdown<ModelCategories>(
               backgroundColor: OrgaliveColors.greyBackground,
-              items: const [
-                "Brasil",
-                "Itália",
-                "Estados Unidos",
-                "Canadá",
-              ],
               showSearchBox: false,
-              // onFind: (items) => _getMedics(),
+              onFind: (items) => _getCategories(),
               label: "Selecione uma categoria",
               labelStyle: const TextStyle(
                 color: OrgaliveColors.whiteSmoke,
@@ -415,9 +465,10 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                 );
               },
               onChanged: ( item ) {
-                // _category = item.name;
+                _category = item!.name;
               },
               dropdownBuilder: (BuildContext context, item) {
+                // print("item.icon 1 => ${item!.icon}");
                 return Container(
                   decoration: BoxDecoration(
                     border: Border.all(
@@ -436,12 +487,12 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                     ),
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
+                      children: const [
                         Text(
-                          (item == null)
-                          ? "Selecione uma categoria"
-                          : "$item",
-                          style: const TextStyle(
+                          /*( item!.name == null )
+                          ? */"Selecione uma categoria"/*
+                          : "${item.name}"*/,
+                          style: TextStyle(
                             color: OrgaliveColors.whiteSmoke,
                           ),
                         ),
@@ -453,6 +504,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
 
               // constroi a exibição das categorias
               dropdownItemBuilder: ( BuildContext context, item, bool isSelected ) {
+                print("item.icon 2 => ${item.icon}");
                 return Container(
                   decoration: !isSelected
                   ? null
@@ -470,7 +522,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                     ),
                     child: ListTile(
                       selected: isSelected,
-                      leading: const CircleAvatar(
+                      leading: CircleAvatar(
                         backgroundColor: OrgaliveColors.bossanova,
                         child: Icon(
                           Icons.home,
@@ -478,7 +530,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                         ),
                       ),
                       title: Text(
-                        "$item",
+                        "${item.name}",
                         style: const TextStyle(
                           color: OrgaliveColors.whiteSmoke,
                         ),
@@ -529,7 +581,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                 );
               },
               onChanged: ( item ) {
-                _accountId = item!.name;
+                _accountId = item!.document;
                 _oldValue = item.value;
                 // _category = item.name;
               },

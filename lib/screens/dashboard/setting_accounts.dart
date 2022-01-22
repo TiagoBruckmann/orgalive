@@ -18,8 +18,7 @@ import 'package:orgalive/screens/widgets/message_widget.dart';
 class SettingAccounts extends StatefulWidget {
 
   final String userUid;
-  final double value;
-  const SettingAccounts({ Key? key, required this.userUid, required this.value }) : super(key: key);
+  const SettingAccounts({ Key? key, required this.userUid }) : super(key: key);
 
   @override
   _SettingAccountsState createState() => _SettingAccountsState();
@@ -71,7 +70,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
     // controladores de texto
     final TextEditingController _controllerName = TextEditingController();
-    MoneyMaskedTextController _controllerValue = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',', initialValue: widget.value);
+    MoneyMaskedTextController _controllerValue = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
 
     showDialog(
       context: context,
@@ -266,7 +265,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
     }
     var data = {
       "name": name,
-      "value": value.replaceAll(",", "."),
+      "value": value,
       "user_uid": widget.userUid,
       "document": dateNow,
       "default": defaultAccont,
@@ -672,7 +671,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
                                     ],
                                   ),
-                                )
+                                ),
 
                               ],
                             ),
@@ -686,8 +685,8 @@ class _SettingAccountsState extends State<SettingAccounts> {
               ),
             );
           },
-        )
-      )
+        ),
+      ),
     );
   }
 }

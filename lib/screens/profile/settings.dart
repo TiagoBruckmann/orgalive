@@ -36,7 +36,6 @@ class _SettingsState extends State<Settings> {
       MaterialPageRoute(
         builder: (builder) => SettingAccounts(
           userUid: widget.userUid,
-          value: 150.00,
         ),
       ),
     );
