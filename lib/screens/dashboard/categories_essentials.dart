@@ -1,6 +1,9 @@
 // pacotes nativos flutter
 import 'package:flutter/material.dart';
+
+// import dos pacotes
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // import dos modelos
 import 'package:orgalive/model/core/firebase/model_firebase.dart';
@@ -15,6 +18,13 @@ class CategoriesEssentials extends StatefulWidget {
 }
 
 class _CategoriesEssentialsState extends State<CategoriesEssentials> {
+
+  // variaveis da tela
+  final List<ModelCategories> _listCategories = [];
+  bool _isLoading =  true;
+
+  // variaveis do banco
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   /*
   final List<ModelCategories> _listCategories = [
@@ -53,6 +63,42 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
   ];
    */
 
+  // buscar categorias
+  Future<List<ModelCategories>> _getCategories() async {
+
+    if ( _listCategories.isEmpty && _isLoading == true ) {
+
+      var data = await _db.collection("categories")
+          .get();
+
+      List<ModelCategories> list = [];
+
+      for ( var item in data.docs ) {
+
+        ModelCategories modelCategories = ModelCategories(
+          item["uid"],
+          item["icon"],
+          item["name"],
+          /*
+          item["selected"],
+          item["value_spending"],
+          item["value_limit"],
+          */
+        );
+
+        list.add(modelCategories);
+      }
+
+      setState(() {
+        _listCategories.addAll(list);
+        _isLoading = false;
+      });
+
+    }
+
+    return _listCategories;
+  }
+
   _saveCategories() {
 
   }
@@ -61,6 +107,7 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
   void initState() {
     super.initState();
     Analytics().sendScreen("essentials-categories");
+    _getCategories();
   }
 
   @override
@@ -71,9 +118,9 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
       ),
 
       body: ListView.builder(
-        itemCount: 0, // _listCategories.length,
+        itemCount: _listCategories.length,
         itemBuilder: ( context, index ) {
-          // ModelCategories modelCategories = _listCategories[index];
+          ModelCategories modelCategories = _listCategories[index];
 
           return Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
@@ -116,7 +163,7 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
                         children: [
 
                           Text(
-                            "teste", // "${modelCategories.name}",
+                            "${modelCategories.name}",
                             style: const TextStyle(
                                 color: OrgaliveColors.whiteSmoke,
                                 fontWeight: FontWeight.w500,

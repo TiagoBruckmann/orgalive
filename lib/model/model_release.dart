@@ -5,14 +5,14 @@ class ModelRelease {
   String? date;
   String? description;
   String? document;
+  int status = 0;
   String? type;
   String? userUid;
   String? value;
-  int status = 0;
 
-  ModelRelease( this.accountId, this.category, this.date, this.description, this.document, this.type, this.userUid, this.value, this.status );
+  ModelRelease( this.accountId, this.category, this.date, this.description, this.document, this.status, this.type, this.userUid, this.value );
 
-  ModelRelease.complete( this.accountId, this.category, this.date, this.description, this.document, this.type, this.userUid, this.value, this.status );
+  ModelRelease.complete( this.accountId, this.category, this.date, this.description, this.document, this.status, this.type, this.userUid, this.value );
 
   factory ModelRelease.fromJson(Map<String, dynamic> json) {
     return ModelRelease(
@@ -21,10 +21,10 @@ class ModelRelease {
       json["date"],
       json["description"],
       json["document"],
+      json["status"],
       json["type"],
       json["user_uid"],
       json["value"],
-      json["status"],
     );
   }
 

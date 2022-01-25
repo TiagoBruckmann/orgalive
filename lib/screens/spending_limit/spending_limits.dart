@@ -42,13 +42,12 @@ class _SpendingLimitsState extends State<SpendingLimits> {
     _userUid = userData!.uid;
   }
 
-  // buscar contas
+  // buscar categorias
   Future<List<ModelCategories>> _getCategories() async {
 
     if ( _listCategories.isEmpty && _isLoading == true ) {
 
       var data = await _db.collection("categories")
-          .where("user_uid", isEqualTo: _userUid)
           .get();
 
       List<ModelCategories> list = [];
@@ -56,7 +55,7 @@ class _SpendingLimitsState extends State<SpendingLimits> {
       for ( var item in data.docs ) {
 
         ModelCategories modelCategories = ModelCategories(
-          item["user_uid"],
+          item["uid"],
           item["icon"],
           item["name"],
           /*
@@ -100,13 +99,13 @@ class _SpendingLimitsState extends State<SpendingLimits> {
   }
 
   // ir para os detalhes
-  _goTodetailSpending( int id, String spendingName ) {
+  _goToDetailSpending( ModelCategories modelCategories ) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (builder) => DetailSpending(
-          id: id,
-          name: spendingName,
+          id: modelCategories.uid!,
+          name: modelCategories.name!,
         ),
       ),
     );
@@ -231,8 +230,10 @@ class _SpendingLimitsState extends State<SpendingLimits> {
             }
 
             return ListView.builder(
-              itemCount: 3,
+              itemCount: _listCategories.length,
               itemBuilder: ( context, index ) {
+
+                ModelCategories modelCategories = _listCategories[index];
 
                 return Container(
                   padding: const EdgeInsets.fromLTRB(2, 10, 2, 0),
@@ -242,7 +243,7 @@ class _SpendingLimitsState extends State<SpendingLimits> {
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
-                            _goTodetailSpending( 1, "Casa");
+                            _goToDetailSpending( modelCategories );
                           },
                           child: Card(
                             color: OrgaliveColors.greyDefault,
@@ -255,8 +256,8 @@ class _SpendingLimitsState extends State<SpendingLimits> {
                                 children: [
 
                                   // categoria
-                                  const ListTile(
-                                    leading: CircleAvatar(
+                                  ListTile(
+                                    leading: const CircleAvatar(
                                       backgroundColor: OrgaliveColors.darkGray,
                                       radius: 17,
                                       child: FaIcon(
@@ -266,8 +267,8 @@ class _SpendingLimitsState extends State<SpendingLimits> {
                                       ),
                                     ),
                                     title: Text(
-                                      "Casa",
-                                      style: TextStyle(
+                                      "${modelCategories.name}",
+                                      style: const TextStyle(
                                         color: OrgaliveColors.whiteSmoke,
                                         fontWeight: FontWeight.w500,
                                         fontSize: 18,

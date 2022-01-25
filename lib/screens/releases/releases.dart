@@ -63,10 +63,10 @@ class _ReleasesState extends State<Releases> {
             ReleaseFunction().formatMonth(item["date"]),
             item["description"],
             item["document"],
+            item["status"],
             item["type"],
             item["user_uid"],
             item["value"],
-            item["status"],
           );
 
           list.add(modelRelease);
@@ -227,20 +227,22 @@ class _ReleasesState extends State<Releases> {
                       title: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            "${modelRelease.description}",
-                            style: const TextStyle(
-                              color: OrgaliveColors.whiteSmoke,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 18,
+                          Flexible(
+                            child: Text(
+                              "${modelRelease.description}",
+                              style: const TextStyle(
+                                color: OrgaliveColors.whiteSmoke,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 18,
+                              ),
                             ),
                           ),
                           Text(
                             "R\$ ${modelRelease.value}",
                             style: TextStyle(
                               color: ( modelRelease.type == "Lucro" )
-                              ? OrgaliveColors.greenDefault
-                              : OrgaliveColors.redDefault,
+                                  ? OrgaliveColors.greenDefault
+                                  : OrgaliveColors.redDefault,
                               fontWeight: FontWeight.w500,
                               fontSize: 18,
                             ),

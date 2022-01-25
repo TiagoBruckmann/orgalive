@@ -96,10 +96,8 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
 
     List<ModelCategories> list = [];
 
-    print("data.docs => ${data.docs}");
     for ( var item in data.docs ) {
 
-      print("item => ${item["icon"]}");
       ModelCategories modelCategories = ModelCategories(
         item["uid"],
         item["name"],
@@ -289,7 +287,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
       "category": _category,
       "account_id": _accountId,
       "date": _daySelected.toString(),
-      "Status": status,
+      "status": status,
     };
 
     await _db.collection("releases").doc(dateNow).set(data);
@@ -468,7 +466,6 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                 _category = item!.name;
               },
               dropdownBuilder: (BuildContext context, item) {
-                // print("item.icon 1 => ${item!.icon}");
                 return Container(
                   decoration: BoxDecoration(
                     border: Border.all(
@@ -504,7 +501,6 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
 
               // constroi a exibição das categorias
               dropdownItemBuilder: ( BuildContext context, item, bool isSelected ) {
-                print("item.icon 2 => ${item.icon}");
                 return Container(
                   decoration: !isSelected
                   ? null
