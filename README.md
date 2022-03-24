@@ -17,6 +17,7 @@ Orgalive - Seu aplicativo de gestão e organização financeira
 ##### Pacotes utilizados
 
 <ul>
+    <li>flutter_native_splash</li>
     <li>firebase_performance</li>
     <li>font_awesome_flutter</li>
     <li>firebase_crashlytics</li>
@@ -30,11 +31,17 @@ Orgalive - Seu aplicativo de gestão e organização financeira
     <li>google_sign_in</li>
     <li>awesome_select</li>
     <li>google_nav_bar</li>
+    <li>flutter_lints</li>
     <li>firebase_core</li>
     <li>firebase_auth</li>
     <li>find_dropdown</li>
     <li>image_picker</li>
+    <li>flutter_mobx</li>
+    <li>mobx_codegen</li>
+    <li>build_runner</li>
+    <li>provider</li>
     <li>graphic</li>
+    <li>mobx</li>
     <li>intl</li>
 </ul>
 
