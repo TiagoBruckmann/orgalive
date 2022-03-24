@@ -118,7 +118,7 @@ class _MoreInfoEssentialsState extends State<MoreInfoEssentials> {
                       backgroundColor: OrgaliveColors.casaBlanca,
                       radius: 20,
                       child: FaIcon(
-                        FontAwesomeIcons.shoppingCart,
+                        FontAwesomeIcons.cartShopping,
                         color: OrgaliveColors.whiteSmoke,
                         size: 20,
                       ),

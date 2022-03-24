@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 // import dos modelos
@@ -13,7 +15,11 @@ import 'package:orgalive/model/core/styles/orgalive_colors.dart';
 import 'package:orgalive/model/model_accounts.dart';
 
 // import das telas
+import 'package:orgalive/screens/widgets/loading_connection.dart';
 import 'package:orgalive/screens/widgets/message_widget.dart';
+
+// gerenciadores de estado
+import 'package:orgalive/mobx/connection/connection_mobx.dart';
 
 class SettingAccounts extends StatefulWidget {
 
@@ -32,6 +38,9 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
   // variaveis do banco
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  // gerenciadores de estado
+  late ConnectionMobx _connectionMobx;
 
   // buscar contas
   Future<List<ModelAccounts>> _getAccounts() async {
@@ -467,226 +476,245 @@ class _SettingAccountsState extends State<SettingAccounts> {
   }
 
   @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+
+    _connectionMobx = Provider.of<ConnectionMobx>(context);
+
+    await _connectionMobx.verifyConnection();
+    _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
+
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+    return Observer(
+      builder: (builder) {
 
-            const Text("Contas"),
+        return Scaffold(
+          appBar: AppBar(
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
 
-            // nova conta
-            GestureDetector(
-              onTap: () {
-                _newAccount();
-              },
-              child: const FaIcon(
-                FontAwesomeIcons.plus,
-              ),
+                const Text("Contas"),
+
+                // nova conta
+                GestureDetector(
+                  onTap: () {
+                    _newAccount();
+                  },
+                  child: const FaIcon(
+                    FontAwesomeIcons.plus,
+                  ),
+                ),
+
+              ],
             ),
+          ),
 
-          ],
-        ),
-      ),
+          body: ( _connectionMobx.connectionStatus.toString() == "ConnectivityResult.none" )
+          ? const LoadingConnection()
+          : RefreshIndicator(
+            onRefresh: () {
+              return _refresh();
+            },
+            child: FutureBuilder<List<ModelAccounts>>(
+              future: _getAccounts(),
+              builder: ( context, snapshot ) {
 
-      body: RefreshIndicator(
-        onRefresh: () {
-          return _refresh();
-        },
-        child: FutureBuilder<List<ModelAccounts>>(
-          future: _getAccounts(),
-          builder: ( context, snapshot ) {
+                // verificando conexão
+                if ( _listAccounts.isNotEmpty ) {
 
-            // verificando conexão
-            if ( _listAccounts.isNotEmpty ) {
+                } else {
+                  if ( snapshot.hasError ) {
 
-            } else {
-              if ( snapshot.hasError ) {
+                    return RefreshIndicator(
+                      onRefresh: () {
+                        return _refresh();
+                      },
+                      child: const CircularProgressIndicator(
+                        color: OrgaliveColors.darkGray,
+                      ),
+                    );
 
-                return RefreshIndicator(
-                    onRefresh: () {
-                      return _refresh();
-                    },
-                    child: const CircularProgressIndicator(
+                  } else if ( snapshot.connectionState == ConnectionState.waiting ) {
+
+                    return const CircularProgressIndicator(
                       color: OrgaliveColors.darkGray,
-                    )
-                );
+                    );
 
-              } else if ( snapshot.connectionState == ConnectionState.waiting ) {
+                  } else if ( _listAccounts.isEmpty ) {
 
-                return const CircularProgressIndicator(
-                  color: OrgaliveColors.darkGray,
-                );
+                    if ( _isLoading == true ) {
 
-              } else if ( _listAccounts.isEmpty ) {
-
-                if ( _isLoading == true ) {
-
-                  return const CircularProgressIndicator(
-                    color: OrgaliveColors.darkGray,
-                  );
-
-                } else {
-
-                  return RefreshIndicator(
-                      onRefresh: () {
-                        return _refresh();
-                      },
-                      child: const CircularProgressIndicator(
+                      return const CircularProgressIndicator(
                         color: OrgaliveColors.darkGray,
-                      )
-                  );
+                      );
 
+                    } else {
+
+                      return RefreshIndicator(
+                        onRefresh: () {
+                          return _refresh();
+                        },
+                        child: const CircularProgressIndicator(
+                          color: OrgaliveColors.darkGray,
+                        ),
+                      );
+
+                    }
+
+                  }  else if ( _listAccounts == [] ) {
+
+                    if ( _isLoading == true ) {
+
+                      return const CircularProgressIndicator(
+                        color: OrgaliveColors.darkGray,
+                      );
+
+                    } else {
+
+                      return RefreshIndicator(
+                        onRefresh: () {
+                          return _refresh();
+                        },
+                        child: const CircularProgressIndicator(
+                          color: OrgaliveColors.darkGray,
+                        ),
+                      );
+
+                    }
+
+                  }
                 }
 
-              }  else if ( _listAccounts == [] ) {
+                return Scrollbar(
+                  child: ListView.builder(
+                    itemCount: _listAccounts.length,
+                    itemBuilder: (context, index) {
 
-                if ( _isLoading == true ) {
+                      ModelAccounts modelAccounts = _listAccounts[index];
 
-                  return const CircularProgressIndicator(
-                    color: OrgaliveColors.darkGray,
-                  );
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 5),
+                        child: Column(
+                          children: [
 
-                } else {
-
-                  return RefreshIndicator(
-                      onRefresh: () {
-                        return _refresh();
-                      },
-                      child: const CircularProgressIndicator(
-                        color: OrgaliveColors.darkGray,
-                      )
-                  );
-
-                }
-
-              }
-            }
-
-            return Scrollbar(
-              child: ListView.builder(
-                itemCount: _listAccounts.length,
-                itemBuilder: (context, index) {
-
-                  ModelAccounts modelAccounts = _listAccounts[index];
-
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 5),
-                    child: Column(
-                      children: [
-
-                        ( index == 0 )
+                            ( index == 0 )
                             ? const Text(
-                          "Aqui estão as suas contas. Você pode editá-las e ajustar seu saldo caso haja a necessidade.",
-                          style: TextStyle(
-                            color: OrgaliveColors.silver,
-                            fontSize: 14,
-                          ),
-                        )
+                              "Aqui estão as suas contas. Você pode editá-las e ajustar seu saldo caso haja a necessidade.",
+                              style: TextStyle(
+                                color: OrgaliveColors.silver,
+                                fontSize: 14,
+                              ),
+                            )
                             : const Padding(padding: EdgeInsets.zero),
 
-                        Padding(
-                          padding: const EdgeInsets.only( top: 10 ),
-                          child: Card(
-                            color: OrgaliveColors.greyDefault,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular( 10 ),
-                            ),
-                            child: Column(
-                              children: [
+                            Padding(
+                              padding: const EdgeInsets.only( top: 10 ),
+                              child: Card(
+                                color: OrgaliveColors.greyDefault,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular( 10 ),
+                                ),
+                                child: Column(
+                                  children: [
 
-                                // detalhes da conta
-                                ListTile(
-                                  leading: const CircleAvatar(
-                                    backgroundColor: OrgaliveColors.darkGray,
-                                    radius: 25,
-                                    child: Icon(
-                                      Icons.account_balance,
-                                      color: OrgaliveColors.bossanova,
-                                      size: 30,
-                                    ),
-                                  ),
-                                  title: Text(
-                                    "${modelAccounts.name}",
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  subtitle: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: const [
-
-                                      Text(
-                                        "Outros",
-                                        style: TextStyle(
-                                          color: OrgaliveColors.silver,
-                                          fontSize: 15,
+                                    // detalhes da conta
+                                    ListTile(
+                                      leading: const CircleAvatar(
+                                        backgroundColor: OrgaliveColors.darkGray,
+                                        radius: 25,
+                                        child: Icon(
+                                          Icons.account_balance,
+                                          color: OrgaliveColors.bossanova,
+                                          size: 30,
                                         ),
                                       ),
+                                      title: Text(
+                                        "${modelAccounts.name}",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                      subtitle: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: const [
 
-                                    ],
-                                  ),
-                                ),
-
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-
-                                      Row(
-                                        children: [
-                                          const Text(
-                                            "Saldo atual: ",
+                                          Text(
+                                            "Outros",
                                             style: TextStyle(
                                               color: OrgaliveColors.silver,
                                               fontSize: 15,
                                             ),
                                           ),
 
-                                          Text(
-                                            "R\$ ${modelAccounts.value}",
-                                            style: const TextStyle(
-                                              color: OrgaliveColors.blueDefault,
-                                              fontSize: 15,
+                                        ],
+                                      ),
+                                    ),
+
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+
+                                          Row(
+                                            children: [
+                                              const Text(
+                                                "Saldo atual: ",
+                                                style: TextStyle(
+                                                  color: OrgaliveColors.silver,
+                                                  fontSize: 15,
+                                                ),
+                                              ),
+
+                                              Text(
+                                                "R\$ ${modelAccounts.value}",
+                                                style: const TextStyle(
+                                                  color: OrgaliveColors.blueDefault,
+                                                  fontSize: 15,
+                                                ),
+                                              ),
+
+                                            ],
+                                          ),
+
+                                          GestureDetector(
+                                            onTap: () {
+                                              _editValue( modelAccounts.value!, modelAccounts.document! );
+                                            },
+                                            child: const FaIcon(
+                                              FontAwesomeIcons.penToSquare,
+                                              color: OrgaliveColors.silver,
+                                              size: 20,
                                             ),
                                           ),
 
                                         ],
                                       ),
+                                    ),
 
-                                      GestureDetector(
-                                        onTap: () {
-                                          _editValue( modelAccounts.value!, modelAccounts.document! );
-                                        },
-                                        child: const FaIcon(
-                                          FontAwesomeIcons.edit,
-                                          color: OrgaliveColors.silver,
-                                          size: 20,
-                                        ),
-                                      ),
-
-                                    ],
-                                  ),
+                                  ],
                                 ),
-
-                              ],
+                              ),
                             ),
-                          ),
-                        ),
 
-                      ],
-                    ),
-                  );
-                },
-              ),
-            );
-          },
-        ),
-      ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+
+      },
     );
   }
 }

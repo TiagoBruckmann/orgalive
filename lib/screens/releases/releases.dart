@@ -1,10 +1,12 @@
 // imports nativos do flutter
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 // import dos pacotes
 import 'package:calendar_timeline/calendar_timeline.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:provider/provider.dart';
 
 // import dos modelos
 import 'package:orgalive/model/core/firebase/model_firebase.dart';
@@ -14,6 +16,10 @@ import 'package:orgalive/model/model_release.dart';
 
 // import das telas
 import 'package:orgalive/screens/releases/widgets/card_date_widget.dart';
+import 'package:orgalive/screens/widgets/loading_connection.dart';
+
+// gerenciadores de estado
+import 'package:orgalive/mobx/connection/connection_mobx.dart';
 
 class Releases extends StatefulWidget {
   const Releases({Key? key}) : super(key: key);
@@ -32,6 +38,9 @@ class _ReleasesState extends State<Releases> {
 
   // variaveis do banco
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  // gerenciadores de estado
+  late ConnectionMobx _connectionMobx;
   
   // busca dos lancamentos do mes
   Future<List<ModelRelease>> _getReleases() async {
@@ -105,187 +114,206 @@ class _ReleasesState extends State<Releases> {
   }
 
   @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+
+    _connectionMobx = Provider.of<ConnectionMobx>(context);
+
+    await _connectionMobx.verifyConnection();
+    _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
+
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Lançamentos"),
-      ),
-      body: RefreshIndicator(
-        onRefresh: () {
-          return _refresh();
-        },
-        child: FutureBuilder<List<ModelRelease>>(
-          future: _getReleases(),
-          builder: ( context, snapshot ) {
+    return Observer(
+      builder: (builder) {
 
-            // verificando conexão
-            if ( _listRelease.isNotEmpty ) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text("Lançamentos"),
+          ),
+          body: ( _connectionMobx.connectionStatus.toString() == "ConnectivityResult.none" )
+          ? const LoadingConnection()
+          : RefreshIndicator(
+            onRefresh: () {
+              return _refresh();
+            },
+            child: FutureBuilder<List<ModelRelease>>(
+              future: _getReleases(),
+              builder: ( context, snapshot ) {
 
-            } else {
-              if ( snapshot.hasError ) {
-
-                return RefreshIndicator(
-                  onRefresh: () {
-                    return _refresh();
-                  },
-                  child: const CircularProgressIndicator(
-                    color: OrgaliveColors.darkGray,
-                  ),
-                );
-
-              } else if ( snapshot.connectionState == ConnectionState.waiting ) {
-
-                return const CircularProgressIndicator(
-                  color: OrgaliveColors.darkGray,
-                );
-
-              } else if ( _listRelease.isEmpty ) {
-
-                if ( _isLoading == true ) {
-
-                  return const CircularProgressIndicator(
-                    color: OrgaliveColors.darkGray,
-                  );
+                // verificando conexão
+                if ( _listRelease.isNotEmpty ) {
 
                 } else {
+                  if ( snapshot.hasError ) {
 
-                  return RefreshIndicator(
-                    onRefresh: () {
-                      return _refresh();
-                    },
-                    child: const CircularProgressIndicator(
-                      color: OrgaliveColors.darkGray,
-                    ),
-                  );
-
-                }
-
-              }  else if ( _listRelease == [] ) {
-
-                if ( _isLoading == true ) {
-
-                  return const CircularProgressIndicator(
-                    color: OrgaliveColors.darkGray,
-                  );
-
-                } else {
-
-                  return RefreshIndicator(
-                    onRefresh: () {
-                      return _refresh();
-                    },
-                    child: const CircularProgressIndicator(
-                      color: OrgaliveColors.darkGray,
-                    ),
-                  );
-
-                }
-
-              }
-            }
-
-            return ListView.builder(
-              itemCount: _listRelease.length,
-              itemBuilder: ( context, index ) {
-
-                ModelRelease modelRelease = _listRelease[index];
-
-                return Column(
-                  children: [
-                    ( index == 0 )
-                    ? CalendarTimeline(
-                      initialDate: _currentYear,
-                      firstDate: DateTime(2021, 12, 06),
-                      lastDate: DateTime(2023, 12, 06),
-                      leftMargin: 16,
-                      onDateSelected: (date) => print(date),
-                      monthColor: OrgaliveColors.silver,
-                      dayColor: OrgaliveColors.bossanova,
-                      activeDayColor: OrgaliveColors.silver,
-                      activeBackgroundDayColor: OrgaliveColors.bossanova,
-                      dotsColor: OrgaliveColors.bossanova,
-                      locale: 'pt_BR',
-                    )
-                    : const Padding(padding: EdgeInsets.zero),
-
-                    // dias de lançamento de valores
-                    CardDateWidget(
-                      title: "${modelRelease.date}",
-                    ),
-
-                    // lista da descricao e dos valores
-                    ListTile(
-                      leading: const CircleAvatar(
-                        backgroundColor: OrgaliveColors.greenDefault,
-                        radius: 22,
-                        child: Icon(
-                          Icons.star,
-                          color: OrgaliveColors.whiteSmoke,
-                          size: 25,
-                        ),
+                    return RefreshIndicator(
+                      onRefresh: () {
+                        return _refresh();
+                      },
+                      child: const CircularProgressIndicator(
+                        color: OrgaliveColors.darkGray,
                       ),
-                      title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              "${modelRelease.description}",
-                              style: const TextStyle(
-                                color: OrgaliveColors.whiteSmoke,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 18,
-                              ),
+                    );
+
+                  } else if ( snapshot.connectionState == ConnectionState.waiting ) {
+
+                    return const CircularProgressIndicator(
+                      color: OrgaliveColors.darkGray,
+                    );
+
+                  } else if ( _listRelease.isEmpty ) {
+
+                    if ( _isLoading == true ) {
+
+                      return const CircularProgressIndicator(
+                        color: OrgaliveColors.darkGray,
+                      );
+
+                    } else {
+
+                      return RefreshIndicator(
+                        onRefresh: () {
+                          return _refresh();
+                        },
+                        child: const CircularProgressIndicator(
+                          color: OrgaliveColors.darkGray,
+                        ),
+                      );
+
+                    }
+
+                  }  else if ( _listRelease == [] ) {
+
+                    if ( _isLoading == true ) {
+
+                      return const CircularProgressIndicator(
+                        color: OrgaliveColors.darkGray,
+                      );
+
+                    } else {
+
+                      return RefreshIndicator(
+                        onRefresh: () {
+                          return _refresh();
+                        },
+                        child: const CircularProgressIndicator(
+                          color: OrgaliveColors.darkGray,
+                        ),
+                      );
+
+                    }
+
+                  }
+                }
+
+                return ListView.builder(
+                  itemCount: _listRelease.length,
+                  itemBuilder: ( context, index ) {
+
+                    ModelRelease modelRelease = _listRelease[index];
+
+                    return Column(
+                      children: [
+                        ( index == 0 )
+                        ? CalendarTimeline(
+                          initialDate: _currentYear,
+                          firstDate: DateTime(2021, 12, 06),
+                          lastDate: DateTime(2023, 12, 06),
+                          leftMargin: 16,
+                          onDateSelected: (date) => print(date),
+                          monthColor: OrgaliveColors.silver,
+                          dayColor: OrgaliveColors.bossanova,
+                          activeDayColor: OrgaliveColors.silver,
+                          activeBackgroundDayColor: OrgaliveColors.bossanova,
+                          dotsColor: OrgaliveColors.bossanova,
+                          locale: 'pt_BR',
+                        )
+                        : const Padding(padding: EdgeInsets.zero),
+
+                        // dias de lançamento de valores
+                        CardDateWidget(
+                          title: "${modelRelease.date}",
+                        ),
+
+                        // lista da descricao e dos valores
+                        ListTile(
+                          leading: const CircleAvatar(
+                            backgroundColor: OrgaliveColors.greenDefault,
+                            radius: 22,
+                            child: Icon(
+                              Icons.star,
+                              color: OrgaliveColors.whiteSmoke,
+                              size: 25,
                             ),
                           ),
-                          Text(
-                            "R\$ ${modelRelease.value}",
-                            style: TextStyle(
-                              color: ( modelRelease.type == "Lucro" )
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  "${modelRelease.description}",
+                                  style: const TextStyle(
+                                    color: OrgaliveColors.whiteSmoke,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                "R\$ ${modelRelease.value}",
+                                style: TextStyle(
+                                  color: ( modelRelease.type == "Lucro" )
                                   ? OrgaliveColors.greenDefault
                                   : OrgaliveColors.redDefault,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 18,
-                            ),
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      subtitle: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "Conta inicial",
-                            style: TextStyle(
-                              color: OrgaliveColors.bossanova,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15,
-                            ),
+                          subtitle: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Conta inicial",
+                                style: TextStyle(
+                                  color: OrgaliveColors.bossanova,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              Text(
+                                ( modelRelease.type == "Lucro" && modelRelease.status == 0 )
+                                  ? "Não recebido"
+                                  : ( modelRelease.type == "Lucro" && modelRelease.status == 1 )
+                                  ? "Recebido"
+                                  : ( modelRelease.type != "Lucro" && modelRelease.status == 0 )
+                                  ? "Não pago"
+                                  : "Pago",
+                                style: const TextStyle(
+                                  color: OrgaliveColors.bossanova,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            ( modelRelease.type == "Lucro" && modelRelease.status == 0 )
-                            ? "Não recebido"
-                            : ( modelRelease.type == "Lucro" && modelRelease.status == 1 )
-                            ? "Recebido"
-                            : ( modelRelease.type != "Lucro" && modelRelease.status == 0 )
-                            ? "Não pago"
-                            : "Pago",
-                            style: const TextStyle(
-                              color: OrgaliveColors.bossanova,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
 
-                  ],
+                      ],
+                    );
+
+                  },
                 );
-
               },
-            );
-          },
-        )
-      )
+            ),
+          ),
+        );
+
+      },
     );
   }
 }

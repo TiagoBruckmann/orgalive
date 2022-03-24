@@ -2,7 +2,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 
 class Analytics {
 
-  final FirebaseAnalytics _analytics = FirebaseAnalytics();
+  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
 
   // send currant screen
   Future<void> sendScreen( String screenName ) async {

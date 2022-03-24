@@ -4,10 +4,16 @@ import 'package:flutter/material.dart';
 // import dos pacotes
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:calendar_timeline/calendar_timeline.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:provider/provider.dart';
 
 // import dos modelos
+import 'package:orgalive/screens/widgets/loading_connection.dart';
 import 'package:orgalive/model/core/firebase/model_firebase.dart';
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+
+// gerenciadores de estado
+import 'package:orgalive/mobx/connection/connection_mobx.dart';
 
 class DetailSpending extends StatefulWidget {
 
@@ -28,6 +34,9 @@ class _DetailSpendingState extends State<DetailSpending> {
   final DateTime _currentYear = DateTime.now();
   final _lastMonth = DateTime.monthsPerYear - 1;
   String _month = "Dezembro";
+
+  // gerenciadores de estado
+  late ConnectionMobx _connectionMobx;
 
   _getMonth() {
 
@@ -87,203 +96,222 @@ class _DetailSpendingState extends State<DetailSpending> {
   }
 
   @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+
+    _connectionMobx = Provider.of<ConnectionMobx>(context);
+
+    await _connectionMobx.verifyConnection();
+    _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
+
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.name),
-      ),
+    return Observer(
+      builder: (builder) {
 
-      body: Column(
-        children: [
-
-          // calendario de relatorios
-          CalendarTimeline(
-            initialDate: _currentYear,
-            firstDate: DateTime(2021, 12, 06),
-            lastDate: DateTime(2023, 12, 06),
-            leftMargin: 16,
-            onDateSelected: (date) {
-              _filterReport();
-            },
-            monthColor: OrgaliveColors.silver,
-            dayColor: OrgaliveColors.bossanova,
-            activeDayColor: OrgaliveColors.silver,
-            activeBackgroundDayColor: OrgaliveColors.bossanova,
-            dotsColor: OrgaliveColors.bossanova,
-            locale: 'pt_BR',
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(widget.name),
           ),
 
-          Card(
-            color: OrgaliveColors.greyDefault,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular( 10 ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 10, 16, 10),
-              child: Column(
-                children: [
+          body: ( _connectionMobx.connectionStatus.toString() == "ConnectivityResult.none" )
+          ? const LoadingConnection()
+          : Column(
+            children: [
 
-                  // quantidade gasta
-                  Row(
-                    children: const [
+              // calendario de relatorios
+              CalendarTimeline(
+                initialDate: _currentYear,
+                firstDate: DateTime(2021, 12, 06),
+                lastDate: DateTime(2023, 12, 06),
+                leftMargin: 16,
+                onDateSelected: (date) {
+                  _filterReport();
+                },
+                monthColor: OrgaliveColors.silver,
+                dayColor: OrgaliveColors.bossanova,
+                activeDayColor: OrgaliveColors.silver,
+                activeBackgroundDayColor: OrgaliveColors.bossanova,
+                dotsColor: OrgaliveColors.bossanova,
+                locale: 'pt_BR',
+              ),
 
-                      Padding(
-                        padding: EdgeInsets.only( left: 10, top: 10 ),
-                        child: Text(
-                          "Disponível",
-                          style: TextStyle(
-                            color: OrgaliveColors.silver,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-
-                    ],
-                  ),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: const [
-
-                      Padding(
-                        padding: EdgeInsets.symmetric( horizontal: 10, vertical: 10 ),
-                        child: Text(
-                          "R\$ 750,00",
-                          style: TextStyle(
-                            color: OrgaliveColors.whiteSmoke,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 25,
-                          ),
-                        ),
-                      ),
-
-                    ],
-                  ),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: const [
-
-                      Text(
-                        "de R\$ 750,00",
-                        style: TextStyle(
-                          color: OrgaliveColors.silver,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 18,
-                        ),
-                      ),
-
-                    ],
-                  ),
-
-                  // cartao e porcentagem gasta
-                  Row(
+              Card(
+                color: OrgaliveColors.greyDefault,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular( 10 ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 10, 16, 10),
+                  child: Column(
                     children: [
 
-                      Card(
-                        color: Colors.greenAccent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular( 4 ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric( vertical: 8, horizontal: 16 ),
-                          child: Row(
-                            children: const [
+                      // quantidade gasta
+                      Row(
+                        children: const [
 
-                              FaIcon(
-                                FontAwesomeIcons.caretDown,
-                                color: OrgaliveColors.greenDefault,
-                                size: 18,
+                          Padding(
+                            padding: EdgeInsets.only( left: 10, top: 10 ),
+                            child: Text(
+                              "Disponível",
+                              style: TextStyle(
+                                color: OrgaliveColors.silver,
+                                fontSize: 14,
                               ),
-
-                              Padding(
-                                padding: EdgeInsets.only( left: 5 ),
-                                child: Text(
-                                  "0.00%",
-                                  style: TextStyle(
-                                    color: OrgaliveColors.greenDefault,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-
-                            ],
+                            ),
                           ),
-                        ),
+
+                        ],
                       ),
 
-                      Flexible(
-                        child: Text(
-                          "Comparado ao mês anterior ($_month)",
-                          style: const TextStyle(
-                            color: OrgaliveColors.whiteSmoke,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 14,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: const [
+
+                          Padding(
+                            padding: EdgeInsets.symmetric( horizontal: 10, vertical: 10 ),
+                            child: Text(
+                              "R\$ 750,00",
+                              style: TextStyle(
+                                color: OrgaliveColors.whiteSmoke,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 25,
+                              ),
+                            ),
                           ),
-                        ),
+
+                        ],
+                      ),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: const [
+
+                          Text(
+                            "de R\$ 750,00",
+                            style: TextStyle(
+                              color: OrgaliveColors.silver,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 18,
+                            ),
+                          ),
+
+                        ],
+                      ),
+
+                      // cartao e porcentagem gasta
+                      Row(
+                        children: [
+
+                          Card(
+                            color: Colors.greenAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular( 4 ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric( vertical: 8, horizontal: 16 ),
+                              child: Row(
+                                children: const [
+
+                                  FaIcon(
+                                    FontAwesomeIcons.caretDown,
+                                    color: OrgaliveColors.greenDefault,
+                                    size: 18,
+                                  ),
+
+                                  Padding(
+                                    padding: EdgeInsets.only( left: 5 ),
+                                    child: Text(
+                                      "0.00%",
+                                      style: TextStyle(
+                                        color: OrgaliveColors.greenDefault,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ),
+
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          Flexible(
+                            child: Text(
+                              "Comparado ao mês anterior ($_month)",
+                              style: const TextStyle(
+                                color: OrgaliveColors.whiteSmoke,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+
+                        ],
                       ),
 
                     ],
                   ),
-
-                ],
-              ),
-            ),
-          ),
-
-          Card(
-            color: OrgaliveColors.greyDefault,
-            elevation: 0,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: TextField(
-                controller: _controllerSearch,
-                keyboardType: TextInputType.text,
-                style: const TextStyle(
-                  color: OrgaliveColors.whiteSmoke,
-                  fontSize: 15,
-                ),
-                textInputAction: TextInputAction.done,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.fromLTRB(5, 22, 5, 16),
-                  hintText: "Lançamentos do mês",
-                  hintStyle: const TextStyle(
-                    color: OrgaliveColors.whiteSmoke,
-                    fontSize: 15,
-                  ),
-                  suffixIcon: TextButton(
-                    onPressed: () {
-                      //
-                    },
-                    child: const FaIcon(
-                      FontAwesomeIcons.search,
-                      color: OrgaliveColors.silver,
-                      size: 18,
-                    ),
-                  ),
-                  filled: true,
-                  enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: OrgaliveColors.greyDefault,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(
-                      color: OrgaliveColors.greyDefault,
-                    ),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
                 ),
               ),
-            ),
-          ),
 
-        ],
-      ),
+              Card(
+                color: OrgaliveColors.greyDefault,
+                elevation: 0,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  child: TextField(
+                    controller: _controllerSearch,
+                    keyboardType: TextInputType.text,
+                    style: const TextStyle(
+                      color: OrgaliveColors.whiteSmoke,
+                      fontSize: 15,
+                    ),
+                    textInputAction: TextInputAction.done,
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.fromLTRB(5, 22, 5, 16),
+                      hintText: "Lançamentos do mês",
+                      hintStyle: const TextStyle(
+                        color: OrgaliveColors.whiteSmoke,
+                        fontSize: 15,
+                      ),
+                      suffixIcon: TextButton(
+                        onPressed: () {
+                          //
+                        },
+                        child: const FaIcon(
+                          FontAwesomeIcons.magnifyingGlass,
+                          color: OrgaliveColors.silver,
+                          size: 18,
+                        ),
+                      ),
+                      filled: true,
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: OrgaliveColors.greyDefault,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: OrgaliveColors.greyDefault,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+            ],
+          ),
+        );
+
+      },
     );
   }
 }

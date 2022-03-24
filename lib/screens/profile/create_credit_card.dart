@@ -1,17 +1,23 @@
 // pacotes nativos flutter
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 // import dos pacotes
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 // import dos modelos
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
 
 // import das telas
+import 'package:orgalive/screens/widgets/loading_connection.dart';
 import 'package:orgalive/screens/widgets/message_widget.dart';
+
+// gerenciadores de estado
+import 'package:orgalive/mobx/connection/connection_mobx.dart';
 
 class CreateCreditCard extends StatefulWidget {
 
@@ -23,6 +29,9 @@ class CreateCreditCard extends StatefulWidget {
 }
 
 class _CreateCreditCardState extends State<CreateCreditCard> {
+
+  // gerenciadores de estado
+  late ConnectionMobx _connectionMobx;
 
   // controladores de texto
   final MaskedTextController _controllerCardNumber = MaskedTextController( mask: "0000 **** **** 0000" );
@@ -97,101 +106,77 @@ class _CreateCreditCardState extends State<CreateCreditCard> {
   }
 
   @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+
+    _connectionMobx = Provider.of<ConnectionMobx>(context);
+
+    await _connectionMobx.verifyConnection();
+    _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
+
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Cartão")
-      ),
+    return Observer(
+      builder: (builder) {
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 5),
-        child: Column(
-          children: [
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text("Cartão"),
+          ),
 
-            // numero do cartao
-            Padding(
-              padding: const EdgeInsets.only( bottom: 20 ),
-              child: TextField(
-                controller: _controllerCardNumber,
-                keyboardType: TextInputType.number,
-                textInputAction: TextInputAction.next,
-                style: const TextStyle(
-                  color: OrgaliveColors.silver,
-                  fontSize: 20,
-                ),
-                onChanged: ( value ) {
-                  if ( value.length == 2 ) {
-                    String credit = value.substring(0, 2);
-                    int type = int.parse(credit);
-                    if ( type >= 40 && type <= 50 ) {
-                      setState(() {
-                        _brand = "Visa";
-                        _icon = FontAwesomeIcons.ccVisa;
-                      });
-                    } else if ( type >= 50 && type <= 63 ) {
-                      setState(() {
-                        _brand = "Master";
-                        _icon = FontAwesomeIcons.ccMastercard;
-                      });
-                    } else {
-                      setState(() {
-                        _brand = "another";
-                        _icon = FontAwesomeIcons.creditCard;
-                      });
-                    }
-                  }
-                },
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
-                  labelText: "Cartão",
-                  filled: true,
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.only( top: 10, left: 10 ),
-                    child: FaIcon(
-                      _icon,
-                      color: OrgaliveColors.whiteSmoke,
-                    ),
-                  ),
-                  labelStyle: const TextStyle(
-                    color: OrgaliveColors.silver,
-                  ),
-                  enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: OrgaliveColors.silver,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(
-                      color: OrgaliveColors.silver,
-                    ),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-              ),
-            ),
-
-            // cvv e validade
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          body: ( _connectionMobx.connectionStatus.toString() == "ConnectivityResult.none" )
+          ? const LoadingConnection()
+          : SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 5),
+            child: Column(
               children: [
 
-                SizedBox(
-                  width: MediaQuery.of(context).size.width / 2.5,
+                // numero do cartao
+                Padding(
+                  padding: const EdgeInsets.only( bottom: 20 ),
                   child: TextField(
-                    controller: _controllerValid,
+                    controller: _controllerCardNumber,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.next,
                     style: const TextStyle(
                       color: OrgaliveColors.silver,
                       fontSize: 20,
                     ),
+                    onChanged: ( value ) {
+                      if ( value.length == 2 ) {
+                        String credit = value.substring(0, 2);
+                        int type = int.parse(credit);
+                        if ( type >= 40 && type <= 50 ) {
+                          setState(() {
+                            _brand = "Visa";
+                            _icon = FontAwesomeIcons.ccVisa;
+                          });
+                        } else if ( type >= 50 && type <= 63 ) {
+                          setState(() {
+                            _brand = "Master";
+                            _icon = FontAwesomeIcons.ccMastercard;
+                          });
+                        } else {
+                          setState(() {
+                            _brand = "another";
+                            _icon = FontAwesomeIcons.creditCard;
+                          });
+                        }
+                      }
+                    },
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
-                      labelText: "Validade",
+                      labelText: "Cartão",
                       filled: true,
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only( top: 10, left: 10 ),
+                        child: FaIcon(
+                          _icon,
+                          color: OrgaliveColors.whiteSmoke,
+                        ),
+                      ),
                       labelStyle: const TextStyle(
                         color: OrgaliveColors.silver,
                       ),
@@ -213,36 +198,102 @@ class _CreateCreditCardState extends State<CreateCreditCard> {
                   ),
                 ),
 
-                SizedBox(
-                  width: MediaQuery.of(context).size.width / 2.5,
-                  child: TextField(
-                    controller: _controllerCvv,
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.done,
-                    style: const TextStyle(
-                      color: OrgaliveColors.silver,
-                      fontSize: 20,
+                // cvv e validade
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width / 2.5,
+                      child: TextField(
+                        controller: _controllerValid,
+                        keyboardType: TextInputType.number,
+                        textInputAction: TextInputAction.next,
+                        style: const TextStyle(
+                          color: OrgaliveColors.silver,
+                          fontSize: 20,
+                        ),
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
+                          labelText: "Validade",
+                          filled: true,
+                          labelStyle: const TextStyle(
+                            color: OrgaliveColors.silver,
+                          ),
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: OrgaliveColors.silver,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: OrgaliveColors.silver,
+                            ),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                      ),
                     ),
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
-                      labelText: "CVV",
-                      filled: true,
-                      labelStyle: const TextStyle(
-                        color: OrgaliveColors.silver,
-                      ),
-                      enabledBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(
+
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width / 2.5,
+                      child: TextField(
+                        controller: _controllerCvv,
+                        keyboardType: TextInputType.number,
+                        textInputAction: TextInputAction.done,
+                        style: const TextStyle(
                           color: OrgaliveColors.silver,
+                          fontSize: 20,
+                        ),
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
+                          labelText: "CVV",
+                          filled: true,
+                          labelStyle: const TextStyle(
+                            color: OrgaliveColors.silver,
+                          ),
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: OrgaliveColors.silver,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: OrgaliveColors.silver,
+                            ),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
                         ),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: OrgaliveColors.silver,
-                        ),
-                        borderRadius: BorderRadius.circular(5),
+                    ),
+
+                  ],
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.only( top: 20 ),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      primary: OrgaliveColors.greenDefault,
+                      padding: const EdgeInsets.symmetric( horizontal: 20, vertical: 17 ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
+                    ),
+                    onPressed: () {
+                      _validateCard();
+                    },
+                    child: const Text(
+                      "Cadastrar cartão",
+                      style: TextStyle(
+                        color: OrgaliveColors.greyDefault,
+                        fontSize: 20,
                       ),
                     ),
                   ),
@@ -250,33 +301,10 @@ class _CreateCreditCardState extends State<CreateCreditCard> {
 
               ],
             ),
+          ),
+        );
 
-            Padding(
-              padding: const EdgeInsets.only( top: 20 ),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: OrgaliveColors.greenDefault,
-                  padding: const EdgeInsets.symmetric( horizontal: 20, vertical: 17 ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () {
-                  _validateCard();
-                },
-                child: const Text(
-                  "Cadastrar cartão",
-                  style: TextStyle(
-                    color: OrgaliveColors.greyDefault,
-                    fontSize: 20,
-                  ),
-                ),
-              ),
-            ),
-
-          ],
-        ),
-      ),
+      },
     );
   }
 }

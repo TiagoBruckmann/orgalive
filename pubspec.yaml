@@ -3,7 +3,7 @@ description: Orgalive - Seu aplicativo de gestão financeira
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+15
+version: 1.0.0+16
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -12,31 +12,45 @@ dependencies:
   flutter:
     sdk: flutter
 
-  firebase_performance: ^0.8.0+4
-  font_awesome_flutter: ^9.2.0
-  firebase_crashlytics: ^2.4.5
+  firebase_performance: ^0.8.0+7
+  font_awesome_flutter: ^10.1.0
+  firebase_crashlytics: ^2.5.3
   flutter_masked_text2: ^0.9.1
-  firebase_analytics: ^8.3.4
-  firebase_storage: ^10.2.5
-  connectivity_plus: ^2.2.0
+  firebase_analytics: ^9.1.2
+  firebase_storage: ^10.2.9
+  connectivity_plus: ^2.2.1
   calendar_timeline: ^1.0.4
-  cloud_firestore: ^3.1.6
+  cloud_firestore: ^3.1.10
   cupertino_icons: ^1.0.4
-  google_sign_in: ^5.2.3
+  google_sign_in: ^5.2.4
   awesome_select: ^5.1.0
-  google_nav_bar: ^5.0.5
-  firebase_core: ^1.11.0
-  image_picker: ^0.8.4+4
-  firebase_auth: ^3.3.5
+  google_nav_bar: ^5.0.6
+  firebase_core: ^1.13.1
+  image_picker: ^0.8.4+11
+  firebase_auth: ^3.3.11
   find_dropdown: ^1.0.0
-  graphic: ^0.8.0
+  flutter_mobx: ^2.0.4
+  provider: ^6.0.2
+  graphic: ^0.9.1
+  mobx: ^2.0.6+1
   intl: ^0.17.0
-  
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^1.0.0
+  flutter_native_splash: ^2.1.1
+  mobx_codegen: ^2.0.5+2
+  flutter_lints: ^1.0.4
+  build_runner: ^2.1.8
+
+  # configuracao da splash
+flutter_native_splash:
+  color: "#363435"
+  # image: assets/img/splash.jpg
+  android: true
+  ios: true
+  fullscreen: true
 
 flutter:
 

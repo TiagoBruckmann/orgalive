@@ -1,7 +1,6 @@
-import 'dart:math';
-import 'dart:ui';
-
+// imports nativos do flutter
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 class AppGradients {
   static const linear = LinearGradient(colors: [

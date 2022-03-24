@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 // import dos pacotes
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:calendar_timeline/calendar_timeline.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:provider/provider.dart';
 import 'package:graphic/graphic.dart';
 import 'package:intl/intl.dart';
 
@@ -11,6 +13,12 @@ import 'package:intl/intl.dart';
 import 'package:orgalive/model/core/firebase/model_firebase.dart';
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
 import 'package:orgalive/screens/reports/data.dart';
+
+// import das telas
+import 'package:orgalive/screens/widgets/loading_connection.dart';
+
+// gerenciadores de estado
+import 'package:orgalive/mobx/connection/connection_mobx.dart';
 
 class DetailReports extends StatefulWidget {
   const DetailReports({Key? key}) : super(key: key);
@@ -25,6 +33,9 @@ class _DetailReportsState extends State<DetailReports> {
   final DateTime _currentYear = DateTime.now();
   final _monthDayFormat = DateFormat('MM-dd');
 
+  // gerenciadores de estado
+  late ConnectionMobx _connectionMobx;
+
   // filtrar relatorio
   _filterReport() {
 
@@ -37,212 +48,231 @@ class _DetailReportsState extends State<DetailReports> {
   }
 
   @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+
+    _connectionMobx = Provider.of<ConnectionMobx>(context);
+
+    await _connectionMobx.verifyConnection();
+    _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
+
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Relatórios"),
-      ),
-      body: SingleChildScrollView(
-        // padding: const EdgeInsets.fromLTRB(16, 10, 16, 5),
-        child: Column(
-          children: [
+    return Observer(
+      builder: (builder) {
 
-            // calendario de relatorios
-            CalendarTimeline(
-              initialDate: _currentYear,
-              firstDate: DateTime(2021, 12, 06),
-              lastDate: DateTime(2023, 12, 06),
-              leftMargin: 16,
-              onDateSelected: (date) {
-                _filterReport();
-              },
-              monthColor: OrgaliveColors.silver,
-              dayColor: OrgaliveColors.bossanova,
-              activeDayColor: OrgaliveColors.silver,
-              activeBackgroundDayColor: OrgaliveColors.bossanova,
-              dotsColor: OrgaliveColors.bossanova,
-              locale: 'pt_BR',
-            ),
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text("Relatórios"),
+          ),
+          body: ( _connectionMobx.connectionStatus.toString() == "ConnectivityResult.none" )
+          ? const LoadingConnection()
+          : SingleChildScrollView(
+            // padding: const EdgeInsets.fromLTRB(16, 10, 16, 5),
+            child: Column(
+              children: [
 
-            // icone
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                CircleAvatar(
-                  backgroundColor: OrgaliveColors.darkGray,
-                  radius: 30,
-                  child: FaIcon(
-                    FontAwesomeIcons.home,
-                    color: OrgaliveColors.bossanova,
-                    size: 30,
-                  ),
+                // calendario de relatorios
+                CalendarTimeline(
+                  initialDate: _currentYear,
+                  firstDate: DateTime(2021, 12, 06),
+                  lastDate: DateTime(2023, 12, 06),
+                  leftMargin: 16,
+                  onDateSelected: (date) {
+                    _filterReport();
+                  },
+                  monthColor: OrgaliveColors.silver,
+                  dayColor: OrgaliveColors.bossanova,
+                  activeDayColor: OrgaliveColors.silver,
+                  activeBackgroundDayColor: OrgaliveColors.bossanova,
+                  dotsColor: OrgaliveColors.bossanova,
+                  locale: 'pt_BR',
                 ),
-              ],
-            ),
 
-            // categoria
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Text(
-                  "Casa",
-                  style: TextStyle(
-                    color: OrgaliveColors.whiteSmoke,
-                    fontSize: 23,
-                  ),
-                ),
-              ],
-            ),
-
-            // grafico
-            Container(
-              margin: const EdgeInsets.only(top: 10),
-              width: 350,
-              height: 150,
-              child: Chart(
-                data: timeSeriesSales,
-                variables: {
-                  'time': Variable(
-                    accessor: (TimeSeriesSales datum) => datum.time,
-                    scale: TimeScale(
-                      formatter: (time) => _monthDayFormat.format(time),
-                    ),
-                  ),
-                  'sales': Variable(
-                    accessor: (TimeSeriesSales datum) => datum.sales,
-                  ),
-                },
-                elements: [LineElement()],
-                axes: [
-                  Defaults.horizontalAxis,
-                  Defaults.verticalAxis,
-                ],
-                selections: {
-                  'touchMove': PointSelection(
-                    on: {
-                      GestureType.scaleUpdate,
-                      GestureType.tapDown,
-                      GestureType.longPressMoveUpdate
-                    },
-                  )
-                },
-                tooltip: TooltipGuide(
-                  followPointer: [false, true],
-                  align: Alignment.topLeft,
-                  offset: const Offset(-20, -20),
-                ),
-                crosshair: CrosshairGuide(followPointer: [false, true]),
-              ),
-            ),
-
-            // total de gastos
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 20, 16, 20), // symmetric( vertical: 20 ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: const [
-
-                  Text.rich(
-                    TextSpan(
-                      text: "Despesa total: ",
-                      style: TextStyle(
-                        color: OrgaliveColors.silver,
-                        fontSize: 14,
+                // icone
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    CircleAvatar(
+                      backgroundColor: OrgaliveColors.darkGray,
+                      radius: 30,
+                      child: FaIcon(
+                        FontAwesomeIcons.house,
+                        color: OrgaliveColors.bossanova,
+                        size: 30,
                       ),
-                      children: [
+                    ),
+                  ],
+                ),
+
+                // categoria
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text(
+                      "Casa",
+                      style: TextStyle(
+                        color: OrgaliveColors.whiteSmoke,
+                        fontSize: 23,
+                      ),
+                    ),
+                  ],
+                ),
+
+                // grafico
+                Container(
+                  margin: const EdgeInsets.only(top: 10),
+                  width: 350,
+                  height: 150,
+                  child: Chart(
+                    data: timeSeriesSales,
+                    variables: {
+                      'time': Variable(
+                        accessor: (TimeSeriesSales datum) => datum.time,
+                        scale: TimeScale(
+                          formatter: (time) => _monthDayFormat.format(time),
+                        ),
+                      ),
+                      'sales': Variable(
+                        accessor: (TimeSeriesSales datum) => datum.sales,
+                      ),
+                    },
+                    elements: [LineElement()],
+                    axes: [
+                      Defaults.horizontalAxis,
+                      Defaults.verticalAxis,
+                    ],
+                    selections: {
+                      'touchMove': PointSelection(
+                        on: {
+                          GestureType.scaleUpdate,
+                          GestureType.tapDown,
+                          GestureType.longPressMoveUpdate
+                        },
+                      )
+                    },
+                    tooltip: TooltipGuide(
+                      followPointer: [false, true],
+                      align: Alignment.topLeft,
+                      offset: const Offset(-20, -20),
+                    ),
+                    crosshair: CrosshairGuide(followPointer: [false, true]),
+                  ),
+                ),
+
+                // total de gastos
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 20, 16, 20), // symmetric( vertical: 20 ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: const [
+
+                      Text.rich(
                         TextSpan(
-                          text: "R\$ 300,00",
+                          text: "Despesa total: ",
                           style: TextStyle(
-                            color: OrgaliveColors.redDefault,
+                            color: OrgaliveColors.silver,
                             fontSize: 14,
                           ),
+                          children: [
+                            TextSpan(
+                              text: "R\$ 300,00",
+                              style: TextStyle(
+                                color: OrgaliveColors.redDefault,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
                         ),
+                      ),
+
+                    ],
+                  ),
+                ),
+
+                // categoria
+                Card(
+                  color: OrgaliveColors.bossanova,
+                  elevation: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+
+                        Flexible(
+                          child: Text(
+                            "Casa",
+                            overflow: TextOverflow.fade,
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: OrgaliveColors.whiteSmoke,
+                            ),
+                          ),
+                        ),
+
+                        Text(
+                          "300,00",
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: OrgaliveColors.whiteSmoke,
+                          ),
+                        ),
+
                       ],
                     ),
                   ),
+                ),
 
-                ],
-              ),
-            ),
+                // lista de gastos
+                ListTile(
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
 
-            // categoria
-            Card(
-              color: OrgaliveColors.bossanova,
-              elevation: 0,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-
-                    Flexible(
-                      child: Text(
+                      Text(
                         "Casa",
-                        overflow: TextOverflow.fade,
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           color: OrgaliveColors.whiteSmoke,
                         ),
                       ),
-                    ),
 
-                    Text(
-                      "300,00",
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: OrgaliveColors.whiteSmoke,
+                      Text(
+                        "04/12/2021",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: OrgaliveColors.silver,
+                        ),
                       ),
-                    ),
 
-                  ],
-                ),
-              ),
-            ),
+                      Text(
+                        "R\$ 119,90",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: OrgaliveColors.whiteSmoke,
+                        ),
+                      ),
 
-            // lista de gastos
-            ListTile(
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-
-                  Text(
-                    "Casa",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: OrgaliveColors.whiteSmoke,
-                    ),
+                    ],
                   ),
-
-                  Text(
-                    "04/12/2021",
+                  subtitle: const Text(
+                    "Conta inicial",
                     style: TextStyle(
                       fontSize: 14,
                       color: OrgaliveColors.silver,
                     ),
                   ),
-
-                  Text(
-                    "R\$ 119,90",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: OrgaliveColors.whiteSmoke,
-                    ),
-                  ),
-
-                ],
-              ),
-              subtitle: const Text(
-                "Conta inicial",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: OrgaliveColors.silver,
                 ),
-              ),
-            ),
 
-          ],
-        ),
-      ),
+              ],
+            ),
+          ),
+        );
+
+      },
     );
   }
 }

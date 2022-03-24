@@ -1,5 +1,4 @@
 // imports nativos do flutter
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 // import dos pacotes
@@ -7,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:calendar_timeline/calendar_timeline.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:awesome_select/awesome_select.dart';
 import 'package:find_dropdown/find_dropdown.dart';
 import 'package:image_picker/image_picker.dart';
@@ -518,7 +518,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                     ),
                     child: ListTile(
                       selected: isSelected,
-                      leading: CircleAvatar(
+                      leading: const CircleAvatar(
                         backgroundColor: OrgaliveColors.bossanova,
                         child: Icon(
                           Icons.home,
@@ -738,7 +738,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                       color: OrgaliveColors.whiteSmoke,
                     ),
                   ),
-                )
+                ),
               );
             },
           ),
@@ -777,7 +777,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                       color: OrgaliveColors.whiteSmoke,
                     ),
                   ),
-                )
+                ),
               );
             },
           ),
@@ -914,7 +914,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                     children: [
 
                       const FaIcon(
-                        FontAwesomeIcons.fileUpload,
+                        FontAwesomeIcons.fileArrowUp,
                         color: OrgaliveColors.whiteSmoke,
                       ),
 

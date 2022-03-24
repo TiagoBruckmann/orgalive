@@ -104,7 +104,7 @@ class _HomeState extends State<Home> {
                 GButton(
                   iconActiveColor: Theme.of(context).secondaryHeaderColor,
                   iconColor: OrgaliveColors.silver,
-                  icon: FontAwesomeIcons.exchangeAlt,
+                  icon: FontAwesomeIcons.rightLeft,
                 ),
 
                 // lancamentos

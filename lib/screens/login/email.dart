@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:provider/provider.dart';
 
 // import dos modelos
 import 'package:orgalive/model/core/firebase/model_firebase.dart';
@@ -12,7 +14,11 @@ import 'package:orgalive/model/core/styles/orgalive_colors.dart';
 import 'package:orgalive/model/model_users.dart';
 
 // import das telas
+import 'package:orgalive/screens/widgets/loading_connection.dart';
 import 'package:orgalive/screens/home.dart';
+
+// gerenciadores de estado
+import 'package:orgalive/mobx/connection/connection_mobx.dart';
 
 class Email extends StatefulWidget {
 
@@ -32,6 +38,9 @@ class _EmailState extends State<Email> {
   // variaveis da tela
   String _mensageError = "";
   bool _passwdVisible = false;
+
+  // gerenciadores de estado
+  late ConnectionMobx _connectionMobx;
 
   // alterar a visibilidade da senha
   _changeVisible() {
@@ -162,162 +171,181 @@ class _EmailState extends State<Email> {
   }
 
   @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+
+    _connectionMobx = Provider.of<ConnectionMobx>(context);
+
+    await _connectionMobx.verifyConnection();
+    _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
+
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Observer(
+      builder: (builder) {
 
-      appBar: AppBar(),
+        return Scaffold(
 
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric( horizontal: 16 ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+          appBar: AppBar(),
 
-              // logo
-              /*
-              Image.asset(
-                AppImages.logo,
-                width: 250,
-              ),
-              */
+          body: ( _connectionMobx.connectionStatus.toString() == "ConnectivityResult.none" )
+          ? const LoadingConnection()
+          : Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric( horizontal: 16 ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
 
-              // email
-              Padding(
-                padding: const EdgeInsets.only( top: 50, bottom: 8),
-                child: TextField(
-                  controller: _controllerMail,
-                  keyboardType: TextInputType.text,
-                  textInputAction: TextInputAction.next,
-                  style: const TextStyle(
-                    color: OrgaliveColors.whiteSmoke,
-                    fontSize: 18,
+                  // logo
+                  /*
+                  Image.asset(
+                    AppImages.logo,
+                    width: 250,
                   ),
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.all(16),
-                    labelText: "E-mail",
-                    labelStyle: const TextStyle(
-                      color: OrgaliveColors.whiteSmoke,
-                    ),
-                    filled: true,
-                    fillColor: Colors.transparent,
-                    enabledBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: OrgaliveColors.darkGray,
+                  */
+
+                  // email
+                  Padding(
+                    padding: const EdgeInsets.only( top: 50, bottom: 8),
+                    child: TextField(
+                      controller: _controllerMail,
+                      keyboardType: TextInputType.text,
+                      textInputAction: TextInputAction.next,
+                      style: const TextStyle(
+                        color: OrgaliveColors.whiteSmoke,
+                        fontSize: 18,
+                      ),
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.all(16),
+                        labelText: "E-mail",
+                        labelStyle: const TextStyle(
+                          color: OrgaliveColors.whiteSmoke,
+                        ),
+                        filled: true,
+                        fillColor: Colors.transparent,
+                        enabledBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: OrgaliveColors.darkGray,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: OrgaliveColors.darkGray,
+                          ),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        border:  OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
                       ),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: OrgaliveColors.darkGray,
-                      ),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    border:  OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
                   ),
-                ),
-              ),
 
-              // senha
-              TextField(
-                controller: _controllerPassword,
-                obscureText: ( _passwdVisible == false )
-                ? true
-                : false,
-                keyboardType: TextInputType.text,
-                style: const TextStyle(
-                  color: OrgaliveColors.whiteSmoke,
-                  fontSize: 18,
-                ),
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(16),
-                  labelText: "Senha",
-                  labelStyle: const TextStyle(
-                    color: OrgaliveColors.whiteSmoke,
-                  ),
-                  filled: true,
-                  fillColor: Colors.transparent,
-                  suffixIcon: TextButton(
-                    onPressed: () {
-                      _changeVisible();
-                    },
-                    child: Icon(
-                      ( _passwdVisible == false )
-                      ? Icons.visibility_off
-                      : Icons.visibility,
+                  // senha
+                  TextField(
+                    controller: _controllerPassword,
+                    obscureText: ( _passwdVisible == false )
+                    ? true
+                    : false,
+                    keyboardType: TextInputType.text,
+                    style: const TextStyle(
                       color: OrgaliveColors.whiteSmoke,
-                    ),
-                  ),
-                  enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: OrgaliveColors.darkGray,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(
-                      color: OrgaliveColors.darkGray,
-                    ),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  border:  OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-              ),
-
-              // mensagem de erro
-              ( _mensageError.isEmpty )
-                ? const Padding(padding: EdgeInsets.zero,)
-                : Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Center(
-                  child: Text(
-                    _mensageError,
-                    style: const TextStyle(
-                      color: OrgaliveColors.redDefault,
-                      fontSize: 20,
-                    ),
-                  ),
-                ),
-              ),
-
-              // acessar
-              Container(
-                padding: const EdgeInsets.only( top: 10, bottom: 10 ),
-                width: MediaQuery.of(context).size.width - 130,
-                child: ElevatedButton(
-                  onPressed: () {
-                    _validateFields();
-                  },
-                  child: Text(
-                    ( widget.type == 1 )
-                    ? "Cadastrar"
-                    : "Entrar",
-                    style: const TextStyle(
-                      color: OrgaliveColors.greenDefault,
-                      fontWeight: FontWeight.w600,
                       fontSize: 18,
                     ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    primary: OrgaliveColors.greyBackground,
-                    padding: const EdgeInsets.symmetric( horizontal: 12, vertical: 12 ),
-                    side: const BorderSide(
-                      color: OrgaliveColors.greenDefault,
-                      width: 3,
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.all(16),
+                      labelText: "Senha",
+                      labelStyle: const TextStyle(
+                        color: OrgaliveColors.whiteSmoke,
+                      ),
+                      filled: true,
+                      fillColor: Colors.transparent,
+                      suffixIcon: TextButton(
+                        onPressed: () {
+                          _changeVisible();
+                        },
+                        child: Icon(
+                          ( _passwdVisible == false )
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                          color: OrgaliveColors.whiteSmoke,
+                        ),
+                      ),
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: OrgaliveColors.darkGray,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: OrgaliveColors.darkGray,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      border:  OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
                   ),
-                ),
-              ),
 
-            ],
+                  // mensagem de erro
+                  ( _mensageError.isEmpty )
+                  ? const Padding(padding: EdgeInsets.zero,)
+                  : Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Center(
+                      child: Text(
+                        _mensageError,
+                        style: const TextStyle(
+                          color: OrgaliveColors.redDefault,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // acessar
+                  Container(
+                    padding: const EdgeInsets.only( top: 10, bottom: 10 ),
+                    width: MediaQuery.of(context).size.width - 130,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _validateFields();
+                      },
+                      child: Text(
+                        ( widget.type == 1 )
+                        ? "Cadastrar"
+                        : "Entrar",
+                        style: const TextStyle(
+                          color: OrgaliveColors.greenDefault,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        primary: OrgaliveColors.greyBackground,
+                        padding: const EdgeInsets.symmetric( horizontal: 12, vertical: 12 ),
+                        side: const BorderSide(
+                          color: OrgaliveColors.greenDefault,
+                          width: 3,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+
+      },
     );
   }
 }

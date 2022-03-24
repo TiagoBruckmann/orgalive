@@ -6,14 +6,20 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:provider/provider.dart';
 
 // import dos modelos
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
 
 // import das telas
+import 'package:orgalive/screens/widgets/loading_connection.dart';
 import 'package:orgalive/screens/widgets/message_widget.dart';
 import 'package:orgalive/screens/login/email.dart';
 import 'package:orgalive/screens/home.dart';
+
+// gerenciadores de estado
+import 'package:orgalive/mobx/connection/connection_mobx.dart';
 
 class LoginOptions extends StatelessWidget {
 
@@ -22,6 +28,10 @@ class LoginOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    // gerenciadores de estado
+    final _connectionMobx = Provider.of<ConnectionMobx>(context);
+    _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
 
     // logar com google
     _loginGoogle() async {
@@ -131,129 +141,137 @@ class LoginOptions extends StatelessWidget {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(),
+    return Observer(
+      builder: (builder){
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric( vertical: 10, horizontal: 16 ),
-        child: Center(
-          child: Column(
-            children: [
+        return Scaffold(
+          appBar: AppBar(),
 
-              // logo
+          body: ( _connectionMobx.connectionStatus.toString() == "ConnectivityResult.none" )
+          ? const LoadingConnection()
+          : SingleChildScrollView(
+            padding: const EdgeInsets.symmetric( vertical: 10, horizontal: 16 ),
+            child: Center(
+              child: Column(
+                children: [
 
-              // textos
-              ListTile(
-                title: Text(
-                  ( type == 1 )
-                  ? "Bem vindo!"
-                  : "Bem vindo novamente!",
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: OrgaliveColors.whiteSmoke,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                  ),
-                ),
+                  // logo
 
-                subtitle: Padding(
-                  padding: const EdgeInsets.symmetric( vertical: 15 ),
-                  child: Text(
-                    ( type == 1 )
-                    ? "Cadastre sua conta para começar a controlar seu dinheirinho."
-                    : "Acesse sua conta para voltar a controlar seu dinheirinho.",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: OrgaliveColors.darkGray,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-              ),
-
-              // login google
-              Padding(
-                padding: const EdgeInsets.only( bottom: 30 ),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: OrgaliveColors.greyBackground,
-                    padding: const EdgeInsets.symmetric( horizontal: 20, vertical: 17 ),
-                    side: const BorderSide(
-                      color: OrgaliveColors.darkGray,
-                      width: 3,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: () {
-                    _loginGoogle();
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: const [
-
-                      FaIcon(
-                        FontAwesomeIcons.google,
-                        color: OrgaliveColors.darkGray,
-                        size: 25,
-                      ),
-
-                      Text(
-                        "Continuar com Google",
-                        style: TextStyle(
-                          color: OrgaliveColors.greenDefault,
-                          fontSize: 20,
-                        ),
-                      ),
-
-                    ],
-                  ),
-                ),
-              ),
-
-              // login email
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: OrgaliveColors.greyBackground,
-                  padding: const EdgeInsets.symmetric( horizontal: 20, vertical: 17 ),
-                  side: const BorderSide(
-                    color: OrgaliveColors.darkGray,
-                    width: 3,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () {
-                  _loginMail();
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: const [
-
-                    FaIcon(
-                      FontAwesomeIcons.envelope,
-                      color: OrgaliveColors.darkGray,
-                      size: 25,
-                    ),
-
-                    Text(
-                      "Continuar com E-mail",
-                      style: TextStyle(
-                        color: OrgaliveColors.greenDefault,
+                  // textos
+                  ListTile(
+                    title: Text(
+                      ( type == 1 )
+                      ? "Bem vindo!"
+                      : "Bem vindo novamente!",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: OrgaliveColors.whiteSmoke,
+                        fontWeight: FontWeight.w700,
                         fontSize: 20,
                       ),
                     ),
 
-                  ],
-                ),
-              ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.symmetric( vertical: 15 ),
+                      child: Text(
+                        ( type == 1 )
+                        ? "Cadastre sua conta para começar a controlar seu dinheirinho."
+                        : "Acesse sua conta para voltar a controlar seu dinheirinho.",
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: OrgaliveColors.darkGray,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
 
-            ],
+                  // login google
+                  Padding(
+                    padding: const EdgeInsets.only( bottom: 30 ),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        primary: OrgaliveColors.greyBackground,
+                        padding: const EdgeInsets.symmetric( horizontal: 20, vertical: 17 ),
+                        side: const BorderSide(
+                          color: OrgaliveColors.darkGray,
+                          width: 3,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () {
+                        _loginGoogle();
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: const [
+
+                          FaIcon(
+                            FontAwesomeIcons.google,
+                            color: OrgaliveColors.darkGray,
+                            size: 25,
+                          ),
+
+                          Text(
+                            "Continuar com Google",
+                            style: TextStyle(
+                              color: OrgaliveColors.greenDefault,
+                              fontSize: 20,
+                            ),
+                          ),
+
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // login email
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      primary: OrgaliveColors.greyBackground,
+                      padding: const EdgeInsets.symmetric( horizontal: 20, vertical: 17 ),
+                      side: const BorderSide(
+                        color: OrgaliveColors.darkGray,
+                        width: 3,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () {
+                      _loginMail();
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: const [
+
+                        FaIcon(
+                          FontAwesomeIcons.envelope,
+                          color: OrgaliveColors.darkGray,
+                          size: 25,
+                        ),
+
+                        Text(
+                          "Continuar com E-mail",
+                          style: TextStyle(
+                            color: OrgaliveColors.greenDefault,
+                            fontSize: 20,
+                          ),
+                        ),
+
+                      ],
+                    ),
+                  ),
+
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+
+      },
     );
   }
 }
