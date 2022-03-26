@@ -1,164 +1,134 @@
 // imports nativos do flutter
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+// import dos modelos
+import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/model/model_accounts.dart';
 
 // import dos pacotes
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:calendar_timeline/calendar_timeline.dart';
-// import 'package:awesome_select/awesome_select.dart';
 import 'package:find_dropdown/find_dropdown.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:orgalive/screens/widgets/message_widget.dart';
 import 'package:provider/provider.dart';
 
-// import dos modelos
-import 'package:orgalive/model/core/model_choices.dart' as model_choices;
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
-import 'package:orgalive/model/model_categories.dart';
-import 'package:orgalive/model/model_accounts.dart';
-
-// import das telas
-import 'package:orgalive/screens/widgets/message_widget.dart';
-
-// import dos gerenciadores de estado
+// gerenciador de estado
 import 'package:orgalive/mobx/accounts/account_mobx.dart';
 
-class BodyFutureReleases extends StatefulWidget {
+class BodyTransferRelease extends StatelessWidget {
 
   final int screenActive;
   final String userUid;
-  const BodyFutureReleases({ Key? key, required this.screenActive, required this.userUid }) : super(key: key);
-
-  @override
-  _BodyFutureReleasesState createState() => _BodyFutureReleasesState();
-}
-
-class _BodyFutureReleasesState extends State<BodyFutureReleases> {
-
-  // configurar o valor da conta
-  final MoneyMaskedTextController _controllerExpense = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
-  final MoneyMaskedTextController _controllerProfit = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
-  final TextEditingController _controllerDescription = TextEditingController();
-  final TextEditingController _controllerTags = TextEditingController();
-  final TextEditingController _controllerObs = TextEditingController();
-
-  // variaveis da tela
-  final DateTime _currentYear = DateTime.now();
-  String _timeExpense = "month";
-  String _nameTimeExpense = "fixa";
-  String _installments = "2";
-  String _nameInstallments = "parcelada";
-
-  // detalhes do documento
-  final _picker = ImagePicker();
-  List<XFile>? _imageFileList;
-  String? _errorPicture;
-
-  // injecao de dependencias
-  late AccountMobx _accountMobx;
-
-  set _imageFile(XFile? value) {
-    _imageFileList = value == null ? null : [value];
-  }
-
-  // seleção do serviço da camera
-  _settingCamera() {
-    final snackBar = SnackBar(
-      content: ListTile(
-        title: TextButton(
-          child: const Text("Camera"),
-          onPressed: () {
-            _selectImage("camera");
-          },
-        ),
-        subtitle: TextButton(
-          child: const Text("Galeria"),
-          onPressed: () {
-            _selectImage("gallery");
-          },
-        ),
-      ),
-    );
-
-    return snackBar;
-  }
-
-  // seleciona a imagem do comprovante
-  Future _selectImage( String imageSource ) async {
-    try {
-
-      XFile? image;
-      switch ( imageSource ) {
-        case "camera": image = await _picker.pickImage(source: ImageSource.camera);
-        break;
-        case "gallery": image = await _picker.pickImage(source: ImageSource.gallery);
-        break;
-      }
-
-      if (image != null) {
-        setState(() {
-          _imageFile = image;
-        });
-      }
-    } catch (e) {
-      _errorPicture = e.toString();
-    }
-  }
-
-  // validar lancamento
-  _validateFields() {
-
-    // valores
-    if ( _controllerExpense.text == "R\$ 0,00" || _controllerProfit.text == "R\$ 0,00" ) {
-      CustomSnackBar(context, "Insira um valor válido", OrgaliveColors.redDefault);
-    }
-
-    // descricao
-    if ( _controllerDescription.text.trim().isEmpty ) {
-      CustomSnackBar(context, "Insira uma descrição para o lançamento", OrgaliveColors.redDefault);
-    }
-
-    if (
-    _controllerExpense.text != "R\$ 0,00" || _controllerProfit.text != "R\$ 0,00" &&
-        _controllerDescription.text.trim().isNotEmpty
-    ) {
-      String value;
-      String type;
-      if ( _controllerExpense.text != "R\$ 0,00" ) {
-        value = _controllerExpense.text;
-        type = "Despesa";
-      } else {
-        value = _controllerProfit.text;
-        type = "Lucro";
-      }
-      _accountMobx.saveRelease(
-        _imageFileList,
-        value,
-        type,
-        _controllerDescription.text,
-        context,
-      );
-    }
-  }
-
-  @override
-  void didChangeDependencies() async {
-    super.didChangeDependencies();
-    _accountMobx = Provider.of<AccountMobx>(context);
-  }
+  const BodyTransferRelease({ Key? key, required this.screenActive, required this.userUid }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+
+    // configuracoes do valor da conta
+    final MoneyMaskedTextController _controllerTransfer = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
+    final TextEditingController _controllerDescription = TextEditingController();
+    final TextEditingController _controllerTags = TextEditingController();
+    final TextEditingController _controllerObs = TextEditingController();
+
+    // injecao de dependencia
+    final AccountMobx _accountMobx = Provider.of<AccountMobx>(context);
+
+    // variaveis da tela
+    final DateTime _currentYear = DateTime.now();
+    String _timeExpense = "month";
+    String _nameTimeExpense = "fixa";
+    String _installments = "2";
+    String _nameInstallments = "parcelada";
+
+    // detalhes do documento
+    final _picker = ImagePicker();
+    List<XFile>? _imageFileList;
+    String? _errorPicture;
+
+    // seleciona a imagem do comprovante
+    Future _selectImage( String imageSource ) async {
+      try {
+
+        XFile? image;
+        switch ( imageSource ) {
+          case "camera": image = await _picker.pickImage(source: ImageSource.camera);
+          break;
+          case "gallery": image = await _picker.pickImage(source: ImageSource.gallery);
+          break;
+        }
+
+        if (image != null) {
+          _imageFileList = [image];
+        }
+      } catch (e) {
+        _errorPicture = e.toString();
+      }
+    }
+
+    // seleção do serviço da camera
+    _settingCamera() {
+      final snackBar = SnackBar(
+        content: ListTile(
+          title: TextButton(
+            child: const Text("Camera"),
+            onPressed: () {
+              _selectImage("camera");
+            },
+          ),
+          subtitle: TextButton(
+            child: const Text("Galeria"),
+            onPressed: () {
+              _selectImage("gallery");
+            },
+          ),
+        ),
+      );
+
+      return snackBar;
+    }
+
+    // validar lancamento
+    _validateFields(  ) {
+
+      _accountMobx.setData(
+        userUid,
+        screenActive,
+      );
+
+      // valores
+      if ( _controllerTransfer.text == "R\$ 0,00" ) {
+        CustomSnackBar(context, "Insira um valor válido", OrgaliveColors.redDefault);
+      }
+
+      // descricao
+      if ( _controllerDescription.text.trim().isEmpty ) {
+        CustomSnackBar(context, "Insira uma descrição para o lançamento", OrgaliveColors.redDefault);
+      }
+
+      if (
+      _controllerTransfer.text != "R\$ 0,00" && _controllerDescription.text.trim().isNotEmpty
+      ) {
+        _accountMobx.saveRelease(
+          _imageFileList,
+          _controllerTransfer.text,
+          "Transferência",
+          _controllerDescription.text,
+          context,
+        );
+      }
+    }
+
     return SingleChildScrollView(
       child: Column(
         children: [
 
           // valores
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+            padding: const EdgeInsets.symmetric( horizontal: 16, vertical: 10 ),
             child: TextField(
-              controller: ( widget.screenActive == 1 )
-              ? _controllerExpense
-              : _controllerProfit,
+              controller: _controllerTransfer,
               keyboardType: TextInputType.number,
               textInputAction: TextInputAction.next,
               style: const TextStyle(
@@ -167,16 +137,12 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
               ),
               autofocus: false,
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
+                contentPadding: const EdgeInsets.symmetric( horizontal: 5, vertical: 16 ),
                 filled: true,
-                suffixIcon: Padding(
-                  padding: const EdgeInsets.only( top: 10 ),
+                suffixIcon: const Padding(
+                  padding: EdgeInsets.only( top: 10 ),
                   child: FaIcon(
-                    ( widget.screenActive == 1 )
-                    ? FontAwesomeIcons.solidThumbsDown
-                    : ( widget.screenActive == 2 )
-                    ? FontAwesomeIcons.solidThumbsUp
-                    : FontAwesomeIcons.solidThumbsDown,
+                    FontAwesomeIcons.solidThumbsDown,
                     color: OrgaliveColors.whiteSmoke,
                   ),
                 ),
@@ -200,7 +166,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
 
           // descricao do valor
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+            padding: const EdgeInsets.symmetric( horizontal: 16, vertical: 10 ),
             child: TextField(
               controller: _controllerDescription,
               keyboardType: TextInputType.text,
@@ -210,7 +176,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
               ),
               textInputAction: TextInputAction.done,
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
+                contentPadding: const EdgeInsets.symmetric( horizontal: 5, vertical: 16 ),
                 labelText: "Descrição",
                 labelStyle: const TextStyle(
                   color: OrgaliveColors.silver,
@@ -234,14 +200,14 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
             ),
           ),
 
-          // listagem das categorias
+          // conta de origem
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-            child: FindDropdown<ModelCategories>(
+            padding: const EdgeInsets.symmetric( horizontal: 16, vertical: 12 ),
+            child: FindDropdown<ModelAccounts>(
               backgroundColor: OrgaliveColors.greyBackground,
               showSearchBox: false,
-              onFind: (items) => _accountMobx.getCategories(),
-              label: "Selecione uma categoria",
+              onFind: (items) => _accountMobx.getAccounts(),
+              label: "Conta de origem",
               labelStyle: const TextStyle(
                 color: OrgaliveColors.whiteSmoke,
               ),
@@ -251,7 +217,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
               errorBuilder: ( context, item ) {
                 return const Center(
                   child: Text(
-                    "Nenhuma categoria encontrada",
+                    "Nenhuma conta encontrada",
                     style: TextStyle(
                       color: OrgaliveColors.whiteSmoke,
                       fontSize: 15,
@@ -263,7 +229,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
               emptyBuilder: ( item ) {
                 return const Center(
                   child: Text(
-                    "Nenhuma categoria encontrada",
+                    "Nenhuma conta encontrada",
                     style: TextStyle(
                       color: OrgaliveColors.whiteSmoke,
                       fontSize: 15,
@@ -273,7 +239,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                 );
               },
               onChanged: ( item ) {
-                _accountMobx.setCategory(item!.name!);
+                _accountMobx.setOrigin(item!);
               },
               dropdownBuilder: (BuildContext context, item) {
                 return Container(
@@ -294,12 +260,12 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                     ),
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
+                      children: [
                         Text(
-                          /*( item!.name == null )
-                          ? */"Selecione uma categoria"/*
-                          : "${item.name}"*/,
-                          style: TextStyle(
+                          (item == null)
+                          ? "Selecione uma conta de origim"
+                          : "${item.name}",
+                          style: const TextStyle(
                             color: OrgaliveColors.whiteSmoke,
                           ),
                         ),
@@ -348,14 +314,14 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
             ),
           ),
 
-          // pagar com
+          // conta de destino
           Padding(
             padding: const EdgeInsets.symmetric( horizontal: 16, vertical: 12 ),
             child: FindDropdown<ModelAccounts>(
               backgroundColor: OrgaliveColors.greyBackground,
               showSearchBox: false,
               onFind: (items) => _accountMobx.getAccounts(),
-              label: "Pagar com",
+              label: "Conta de destino",
               labelStyle: const TextStyle(
                 color: OrgaliveColors.whiteSmoke,
               ),
@@ -411,8 +377,8 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                       children: [
                         Text(
                           (item == null)
-                              ? "Selecione uma conta"
-                              : "${item.name}",
+                          ? "Selecione uma conta de destino"
+                          : "${item.name}",
                           style: const TextStyle(
                             color: OrgaliveColors.whiteSmoke,
                           ),
@@ -427,8 +393,8 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
               dropdownItemBuilder: ( BuildContext context, item, bool isSelected ) {
                 return Container(
                   decoration: !isSelected
-                      ? null
-                      : BoxDecoration(
+                  ? null
+                  : BoxDecoration(
                     border: Border.all(
                       color: Theme.of(context).primaryColor,
                     ),
@@ -626,7 +592,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                   ),
                   textInputAction: TextInputAction.done,
                   decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
+                    contentPadding: const EdgeInsets.symmetric( horizontal: 5, vertical: 16 ),
                     hintText: "Anexar tags",
                     hintStyle: const TextStyle(
                       color: OrgaliveColors.whiteSmoke,
@@ -676,7 +642,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                   ),
                   textInputAction: TextInputAction.done,
                   decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
+                    contentPadding: const EdgeInsets.symmetric( horizontal: 5, vertical: 16 ),
                     hintText: "Adicione alguma observação",
                     hintStyle: const TextStyle(
                       color: OrgaliveColors.whiteSmoke,
@@ -767,15 +733,11 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
             child: ElevatedButton(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+                children: const [
 
                   Text(
-                    ( widget.screenActive == 1 )
-                    ? "Cadastrar despesa"
-                    : ( widget.screenActive == 2 )
-                    ? "Cadastrar lucro"
-                    : "Cadastrar transferência",
-                    style: const TextStyle(
+                    "Cadastrar transferência",
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                     ),
@@ -785,14 +747,14 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
               ),
               style: ElevatedButton.styleFrom(
                 primary: OrgaliveColors.greenDefault,
-                padding: const EdgeInsets.fromLTRB(36, 16, 36, 16),
+                padding: const EdgeInsets.symmetric( horizontal: 36, vertical: 16 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
               ),
               onPressed: () {
                 _validateFields();
-              }
+              },
             ),
           ),
 

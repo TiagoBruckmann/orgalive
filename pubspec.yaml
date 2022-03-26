@@ -3,7 +3,7 @@ description: Orgalive - Seu aplicativo de gestão financeira
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+16
+version: 1.0.0+17
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -23,7 +23,6 @@ dependencies:
   cloud_firestore: ^3.1.10
   cupertino_icons: ^1.0.4
   google_sign_in: ^5.2.4
-  awesome_select: ^5.1.0
   google_nav_bar: ^5.0.6
   firebase_core: ^1.13.1
   image_picker: ^0.8.4+11

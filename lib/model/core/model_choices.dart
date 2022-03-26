@@ -1,3 +1,4 @@
+/*
 import 'package:awesome_select/awesome_select.dart' show S2Choice;
 
 // despesa fixa
@@ -29,3 +30,4 @@ List<S2Choice<String>> installments = [
   S2Choice<String>(value: '14', title: '14 vezes'),
   S2Choice<String>(value: '15', title: '15 vezes'),
 ];
+ */

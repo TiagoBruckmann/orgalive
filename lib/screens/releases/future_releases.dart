@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 // import dos pacotes
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:orgalive/screens/releases/widgets/body_transfer_release.dart';
 import 'package:provider/provider.dart';
 
 // import das telas
@@ -143,7 +144,7 @@ class _FutureReleasesState extends State<FutureReleases> {
 
                 // transferencia
                 Scaffold(
-                  body: BodyFutureReleases( screenActive: 3, userUid: _userUid, ),
+                  body: BodyTransferRelease( screenActive: 3, userUid: _userUid, )
                 ),
 
               ],
