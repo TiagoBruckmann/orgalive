@@ -1,9 +1,9 @@
 // imports nativos do flutter
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 // import dos modelos
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/model/functions/accounts/account.dart';
 import 'package:orgalive/model/model_accounts.dart';
 
 // import dos pacotes
@@ -11,11 +11,10 @@ import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:calendar_timeline/calendar_timeline.dart';
 import 'package:find_dropdown/find_dropdown.dart';
-import 'package:orgalive/screens/widgets/message_widget.dart';
-import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 
-// gerenciador de estado
-import 'package:orgalive/mobx/accounts/account_mobx.dart';
+// import das telas
+import 'package:orgalive/screens/widgets/message_widget.dart';
 
 class BodyTransferRelease extends StatelessWidget {
 
@@ -32,15 +31,19 @@ class BodyTransferRelease extends StatelessWidget {
     final TextEditingController _controllerTags = TextEditingController();
     final TextEditingController _controllerObs = TextEditingController();
 
-    // injecao de dependencia
-    final AccountMobx _accountMobx = Provider.of<AccountMobx>(context);
-
     // variaveis da tela
     final DateTime _currentYear = DateTime.now();
+    DateTime _daySelected = DateTime.now();
+    String _accountId = "";
+    String _oldValue = "";
+    String _originAccountId = "";
+    String _category = "";
+    /*
     String _timeExpense = "month";
     String _nameTimeExpense = "fixa";
     String _installments = "2";
     String _nameInstallments = "parcelada";
+    */
 
     // detalhes do documento
     final _picker = ImagePicker();
@@ -90,12 +93,7 @@ class BodyTransferRelease extends StatelessWidget {
     }
 
     // validar lancamento
-    _validateFields(  ) {
-
-      _accountMobx.setData(
-        userUid,
-        screenActive,
-      );
+    _validateFields() {
 
       // valores
       if ( _controllerTransfer.text == "R\$ 0,00" ) {
@@ -110,12 +108,19 @@ class BodyTransferRelease extends StatelessWidget {
       if (
       _controllerTransfer.text != "R\$ 0,00" && _controllerDescription.text.trim().isNotEmpty
       ) {
-        _accountMobx.saveRelease(
+        AccountFunction().saveRelease(
+          userUid,
+          _category,
+          _oldValue,
+          screenActive,
+          _accountId,
           _imageFileList,
           _controllerTransfer.text,
           "Transferência",
           _controllerDescription.text,
+          _daySelected,
           context,
+          _originAccountId,
         );
       }
     }
@@ -142,7 +147,7 @@ class BodyTransferRelease extends StatelessWidget {
                 suffixIcon: const Padding(
                   padding: EdgeInsets.only( top: 10 ),
                   child: FaIcon(
-                    FontAwesomeIcons.solidThumbsDown,
+                    FontAwesomeIcons.solidThumbsUp,
                     color: OrgaliveColors.whiteSmoke,
                   ),
                 ),
@@ -206,7 +211,10 @@ class BodyTransferRelease extends StatelessWidget {
             child: FindDropdown<ModelAccounts>(
               backgroundColor: OrgaliveColors.greyBackground,
               showSearchBox: false,
-              onFind: (items) => _accountMobx.getAccounts(),
+              onFind: (items) => AccountFunction().getAccounts(
+                userUid,
+                null,
+              ),
               label: "Conta de origem",
               labelStyle: const TextStyle(
                 color: OrgaliveColors.whiteSmoke,
@@ -239,7 +247,8 @@ class BodyTransferRelease extends StatelessWidget {
                 );
               },
               onChanged: ( item ) {
-                _accountMobx.setOrigin(item!);
+                _originAccountId = item!.document!;
+                // _originOldValue = item.value!;
               },
               dropdownBuilder: (BuildContext context, item) {
                 return Container(
@@ -320,7 +329,10 @@ class BodyTransferRelease extends StatelessWidget {
             child: FindDropdown<ModelAccounts>(
               backgroundColor: OrgaliveColors.greyBackground,
               showSearchBox: false,
-              onFind: (items) => _accountMobx.getAccounts(),
+              onFind: (items) => AccountFunction().getAccounts(
+                userUid,
+                _originAccountId,
+              ),
               label: "Conta de destino",
               labelStyle: const TextStyle(
                 color: OrgaliveColors.whiteSmoke,
@@ -353,7 +365,8 @@ class BodyTransferRelease extends StatelessWidget {
                 );
               },
               onChanged: ( item ) {
-                _accountMobx.setValue(item!);
+                _accountId = item!.document!;
+                _oldValue = item.value!;
               },
               dropdownBuilder: (BuildContext context, item) {
                 return Container(
@@ -444,7 +457,7 @@ class BodyTransferRelease extends StatelessWidget {
               lastDate: DateTime(2023, 12, 06),
               leftMargin: 16,
               onDateSelected: (date) {
-                _accountMobx.setDateSelected(date);
+                _daySelected = date!;
               },
               monthColor: OrgaliveColors.silver,
               dayColor: OrgaliveColors.bossanova,
@@ -477,11 +490,7 @@ class BodyTransferRelease extends StatelessWidget {
           // despesa fixa
           /*
           SmartSelect<String?>.single(
-            title: ( widget.screenActive == 1 )
-            ? "Despesa fixa"
-            : ( widget.screenActive == 2 )
-            ? "Receita fixa"
-            : "Transferência fixa",
+            title: "Transferência fixa",
             selectedValue: _timeExpense,
             choiceItems: model_choices.fixed,
 
@@ -499,16 +508,8 @@ class BodyTransferRelease extends StatelessWidget {
                 title: Padding(
                   padding: const EdgeInsets.only( left: 20 ),
                   child: Text(
-                    ( _nameTimeExpense == "fixa" && widget.screenActive == 1 )
-                    ? "Despesa fixa"
-                    : ( _nameTimeExpense == "fixa" && widget.screenActive == 2 )
-                    ? "Receita fixa"
-                    : ( _nameTimeExpense == "fixa" && widget.screenActive == 3 )
+                    ( _nameTimeExpense == "fixa" && widget.screenActive == 3 )
                     ? "Transferência fixa"
-                    : ( _nameTimeExpense != "fixa" && widget.screenActive == 1 )
-                    ? "Despesa fixa $_nameTimeExpense"
-                    : ( _nameTimeExpense != "fixa" && widget.screenActive == 2 )
-                    ? "Receita fixa $_nameTimeExpense"
                     : "Transferência fixa $_nameTimeExpense",
                     style: const TextStyle(
                       color: OrgaliveColors.whiteSmoke,
@@ -521,11 +522,7 @@ class BodyTransferRelease extends StatelessWidget {
 
           // depesa parcelada
           SmartSelect<String?>.single(
-            title: ( widget.screenActive == 1 )
-            ? "Despesa parcelada"
-            : ( widget.screenActive == 2 )
-            ? "Receita parcelada"
-            : "Transferência parcelada",
+            title: "Transferência parcelada",
             selectedValue: _installments,
             choiceItems: model_choices.installments,
             onChange: (selected) {
@@ -542,11 +539,7 @@ class BodyTransferRelease extends StatelessWidget {
                 title: Padding(
                   padding: const EdgeInsets.only( left: 20 ),
                   child: Text(
-                    ( _nameInstallments == "parcelada" && widget.screenActive == 1 )
-                    ? "Despesa parcelada"
-                    : ( _nameInstallments == "parcelada" && widget.screenActive == 2 )
-                    ? "Receita parcelada"
-                    : ( _nameInstallments == "parcelada" && widget.screenActive == 3 )
+                    ( _nameInstallments == "parcelada" && widget.screenActive == 3 )
                     ? "Transferência parcelada"
                     : "Parcelado em $_nameInstallments",
                     style: const TextStyle(

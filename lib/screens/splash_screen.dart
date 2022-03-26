@@ -4,9 +4,8 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 
 // import dos pacotes
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 
 // import dos modelos
 import 'package:orgalive/model/core/styles/app_images.dart';
@@ -14,6 +13,9 @@ import 'package:orgalive/model/core/styles/app_images.dart';
 // import das telas
 import 'package:orgalive/screens/login/info.dart';
 import 'home.dart';
+
+// gerenciadores de estado
+import 'package:orgalive/mobx/connection/connection_mobx.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -24,45 +26,12 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
 
-  // conexao com a internet
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
-  ConnectivityResult _connectionStatus = ConnectivityResult.none;
-  final Connectivity _connectivity = Connectivity();
+  // gerenciadores de estado
+  late ConnectionMobx _connectionMobx;
 
-  // verificar conexão com a internet
-  Future<void> verifyConnection() async {
+  _verifyUserLogged() async {
 
-    late ConnectivityResult result;
-
-    try {
-      result = await _connectivity.checkConnectivity();
-    } on PlatformException catch (e) {
-      FirebaseCrashlytics.instance.log(e.toString());
-      return;
-    }
-
-    return _updateConnectionStatus(result);
-
-  }
-
-  // atualizar o status da conexao
-  Future<void> _updateConnectionStatus( ConnectivityResult result ) async {
-    setState(() {
-      _connectionStatus = result;
-    });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    Timer(const Duration(seconds: 3), () {
-      _verifyUserLoged();
-    });
-  }
-
-  _verifyUserLoged() async {
-
-    if ( _connectionStatus.toString() == "ConnectivityResult.wifi" || _connectionStatus.toString() == "ConnectivityResult.mobile" ) {
+    if ( _connectionMobx.connectionStatus.toString() == "ConnectivityResult.wifi" || _connectionMobx.connectionStatus.toString() == "ConnectivityResult.mobile" ) {
 
       FirebaseAuth auth = FirebaseAuth.instance;
       User? userData = auth.currentUser;
@@ -83,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (builder) => const Info()
+            builder: (builder) => const Info(),
           ),
         );
 
@@ -94,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (builder) => const Info()
+          builder: (builder) => const Info(),
         ),
       );
 
@@ -102,15 +71,16 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-  }
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+    _connectionMobx = Provider.of<ConnectionMobx>(context);
 
-  @override
-  void dispose() {
-    super.dispose();
-    _connectivitySubscription.cancel();
+    await _connectionMobx.verifyConnection();
+    _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
+
+    Timer(const Duration(seconds: 3), () {
+      _verifyUserLogged();
+    });
   }
 
   @override

@@ -8,19 +8,16 @@ import 'package:calendar_timeline/calendar_timeline.dart';
 // import 'package:awesome_select/awesome_select.dart';
 import 'package:find_dropdown/find_dropdown.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/model_choices.dart' as model_choices;
+// import 'package:orgalive/model/core/model_choices.dart' as model_choices;
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/model/functions/accounts/account.dart';
 import 'package:orgalive/model/model_categories.dart';
 import 'package:orgalive/model/model_accounts.dart';
 
 // import das telas
 import 'package:orgalive/screens/widgets/message_widget.dart';
-
-// import dos gerenciadores de estado
-import 'package:orgalive/mobx/accounts/account_mobx.dart';
 
 class BodyFutureReleases extends StatefulWidget {
 
@@ -43,18 +40,21 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
 
   // variaveis da tela
   final DateTime _currentYear = DateTime.now();
+  DateTime _daySelected = DateTime.now();
+  String _oldValue = "";
+  String _accountId = "";
+  String _category = "";
+  /*
   String _timeExpense = "month";
   String _nameTimeExpense = "fixa";
   String _installments = "2";
   String _nameInstallments = "parcelada";
+   */
 
   // detalhes do documento
   final _picker = ImagePicker();
   List<XFile>? _imageFileList;
   String? _errorPicture;
-
-  // injecao de dependencias
-  late AccountMobx _accountMobx;
 
   set _imageFile(XFile? value) {
     _imageFileList = value == null ? null : [value];
@@ -130,20 +130,21 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
         value = _controllerProfit.text;
         type = "Lucro";
       }
-      _accountMobx.saveRelease(
+      AccountFunction().saveRelease(
+        widget.userUid,
+        _category,
+        _oldValue,
+        widget.screenActive,
+        _accountId,
         _imageFileList,
         value,
         type,
         _controllerDescription.text,
+        _daySelected,
         context,
+        null
       );
     }
-  }
-
-  @override
-  void didChangeDependencies() async {
-    super.didChangeDependencies();
-    _accountMobx = Provider.of<AccountMobx>(context);
   }
 
   @override
@@ -174,9 +175,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                   child: FaIcon(
                     ( widget.screenActive == 1 )
                     ? FontAwesomeIcons.solidThumbsDown
-                    : ( widget.screenActive == 2 )
-                    ? FontAwesomeIcons.solidThumbsUp
-                    : FontAwesomeIcons.solidThumbsDown,
+                    : FontAwesomeIcons.solidThumbsUp,
                     color: OrgaliveColors.whiteSmoke,
                   ),
                 ),
@@ -240,7 +239,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
             child: FindDropdown<ModelCategories>(
               backgroundColor: OrgaliveColors.greyBackground,
               showSearchBox: false,
-              onFind: (items) => _accountMobx.getCategories(),
+              onFind: (items) => AccountFunction().getCategories(),
               label: "Selecione uma categoria",
               labelStyle: const TextStyle(
                 color: OrgaliveColors.whiteSmoke,
@@ -273,7 +272,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                 );
               },
               onChanged: ( item ) {
-                _accountMobx.setCategory(item!.name!);
+                _category = item!.name!;
               },
               dropdownBuilder: (BuildContext context, item) {
                 return Container(
@@ -354,8 +353,13 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
             child: FindDropdown<ModelAccounts>(
               backgroundColor: OrgaliveColors.greyBackground,
               showSearchBox: false,
-              onFind: (items) => _accountMobx.getAccounts(),
-              label: "Pagar com",
+              onFind: (items) => AccountFunction().getAccounts(
+                widget.userUid,
+                null
+              ),
+              label: ( widget.screenActive == 1 )
+              ? "Pagar com"
+              : "receber com",
               labelStyle: const TextStyle(
                 color: OrgaliveColors.whiteSmoke,
               ),
@@ -387,7 +391,8 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                 );
               },
               onChanged: ( item ) {
-                _accountMobx.setValue(item!);
+                _accountId = item!.document!;
+                _oldValue = item.value!;
               },
               dropdownBuilder: (BuildContext context, item) {
                 return Container(
@@ -427,8 +432,8 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
               dropdownItemBuilder: ( BuildContext context, item, bool isSelected ) {
                 return Container(
                   decoration: !isSelected
-                      ? null
-                      : BoxDecoration(
+                  ? null
+                  : BoxDecoration(
                     border: Border.all(
                       color: Theme.of(context).primaryColor,
                     ),
@@ -478,7 +483,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
               lastDate: DateTime(2023, 12, 06),
               leftMargin: 16,
               onDateSelected: (date) {
-                _accountMobx.setDateSelected(date);
+                _daySelected = date!;
               },
               monthColor: OrgaliveColors.silver,
               dayColor: OrgaliveColors.bossanova,
@@ -513,9 +518,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
           SmartSelect<String?>.single(
             title: ( widget.screenActive == 1 )
             ? "Despesa fixa"
-            : ( widget.screenActive == 2 )
-            ? "Receita fixa"
-            : "Transferência fixa",
+            : "Receita fixa",
             selectedValue: _timeExpense,
             choiceItems: model_choices.fixed,
 
@@ -537,13 +540,9 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                     ? "Despesa fixa"
                     : ( _nameTimeExpense == "fixa" && widget.screenActive == 2 )
                     ? "Receita fixa"
-                    : ( _nameTimeExpense == "fixa" && widget.screenActive == 3 )
-                    ? "Transferência fixa"
                     : ( _nameTimeExpense != "fixa" && widget.screenActive == 1 )
                     ? "Despesa fixa $_nameTimeExpense"
-                    : ( _nameTimeExpense != "fixa" && widget.screenActive == 2 )
-                    ? "Receita fixa $_nameTimeExpense"
-                    : "Transferência fixa $_nameTimeExpense",
+                    : "Receita fixa $_nameTimeExpense",
                     style: const TextStyle(
                       color: OrgaliveColors.whiteSmoke,
                     ),
@@ -557,9 +556,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
           SmartSelect<String?>.single(
             title: ( widget.screenActive == 1 )
             ? "Despesa parcelada"
-            : ( widget.screenActive == 2 )
-            ? "Receita parcelada"
-            : "Transferência parcelada",
+            : "Receita parcelada",
             selectedValue: _installments,
             choiceItems: model_choices.installments,
             onChange: (selected) {
@@ -580,8 +577,6 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                     ? "Despesa parcelada"
                     : ( _nameInstallments == "parcelada" && widget.screenActive == 2 )
                     ? "Receita parcelada"
-                    : ( _nameInstallments == "parcelada" && widget.screenActive == 3 )
-                    ? "Transferência parcelada"
                     : "Parcelado em $_nameInstallments",
                     style: const TextStyle(
                       color: OrgaliveColors.whiteSmoke,
@@ -772,9 +767,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                   Text(
                     ( widget.screenActive == 1 )
                     ? "Cadastrar despesa"
-                    : ( widget.screenActive == 2 )
-                    ? "Cadastrar lucro"
-                    : "Cadastrar transferência",
+                    : "Cadastrar lucro",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,

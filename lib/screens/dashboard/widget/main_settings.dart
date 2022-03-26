@@ -52,15 +52,9 @@ class _MainSettingsState extends State<MainSettings> {
 
   // alterar a visibilidade do valor
   _changeVisibility() {
-    if ( _valueVisible == false ) {
-      setState(() {
-        _valueVisible = true;
-      });
-    } else {
-      setState(() {
-        _valueVisible = false;
-      });
-    }
+    setState(() {
+      _valueVisible = !_valueVisible;
+    });
   }
 
   // gerenciar as contas
