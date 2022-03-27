@@ -20,6 +20,7 @@ import 'package:orgalive/screens/widgets/message_widget.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
+import 'package:orgalive/mobx/accounts/accounts_mobx.dart';
 
 class SettingAccounts extends StatefulWidget {
 
@@ -32,46 +33,38 @@ class SettingAccounts extends StatefulWidget {
 
 class _SettingAccountsState extends State<SettingAccounts> {
 
-  // variavies da tela
-  final List<ModelAccounts> _listAccounts = [];
-  bool _isLoading =  true;
-
   // variaveis do banco
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // gerenciadores de estado
+  final AccountsMobx _accountsMobx = AccountsMobx();
   late ConnectionMobx _connectionMobx;
 
   // buscar contas
   Future<List<ModelAccounts>> _getAccounts() async {
 
-    if ( _listAccounts.isEmpty ) {
-
+    if ( _accountsMobx.isLoading == true  ) {
       var data = await _db.collection("accounts").where("user_uid", isEqualTo: widget.userUid).get();
 
-      List<ModelAccounts> list = [];
+      if ( data.docs.length > _accountsMobx.listAccounts.length ) {
 
-      for ( var item in data.docs ) {
+        for ( var item in data.docs ) {
 
-        ModelAccounts modelAccounts = ModelAccounts(
-          item["user_uid"],
-          item["name"],
-          item["value"],
-          item["document"],
-          item["default"],
-        );
+          ModelAccounts modelAccounts = ModelAccounts(
+            item["user_uid"],
+            item["name"],
+            item["value"],
+            item["document"],
+            item["default"],
+          );
 
-        list.add(modelAccounts);
+          _accountsMobx.setNew(modelAccounts);
+        }
+
+        _accountsMobx.updLoading(false);
       }
-
-      setState(() {
-        _listAccounts.addAll(list);
-        _isLoading = false;
-      });
-
     }
-
-    return _listAccounts;
+    return _accountsMobx.listAccounts;
   }
 
   // nova conta
@@ -84,7 +77,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (contex) {
+      builder: (context) {
         return Container(
           padding: const EdgeInsets.fromLTRB(16, 150, 16, 0),
           child: Center(
@@ -266,18 +259,18 @@ class _SettingAccountsState extends State<SettingAccounts> {
     DateTime now = DateTime.now();
     String dateNow = DateFormat('yyyyMMddkkmmss').format(now);
 
-    bool? defaultAccont;
-    if ( _listAccounts.isEmpty ) {
-      defaultAccont = true;
+    bool? defaultAccount;
+    if ( _accountsMobx.listAccounts.isEmpty ) {
+      defaultAccount = true;
     } else {
-      defaultAccont = false;
+      defaultAccount = false;
     }
     var data = {
       "name": name,
       "value": value,
       "user_uid": widget.userUid,
       "document": dateNow,
-      "default": defaultAccont,
+      "default": defaultAccount,
     };
     await _db.collection("accounts").doc(dateNow).set(data);
 
@@ -292,16 +285,15 @@ class _SettingAccountsState extends State<SettingAccounts> {
   }
 
   // atualizar conta
-  _editValue( String value, String document ) {
+  _editValue( ModelAccounts modelAccounts ) {
 
-    double newValue = double.parse(value.replaceAll(",", "."));
-    // configurar o valor da conta
-    MoneyMaskedTextController _controllerValue = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',', initialValue: newValue );
+    MoneyMaskedTextController _controllerValue = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
+    _controllerValue.text = modelAccounts.value!;
 
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (contex) {
+      builder: (context) {
         return Container(
           padding: const EdgeInsets.fromLTRB(16, 150, 16, 0),
           child: SingleChildScrollView(
@@ -337,11 +329,11 @@ class _SettingAccountsState extends State<SettingAccounts> {
                           ),
                         ),
 
-                        const Padding(
-                          padding: EdgeInsets.only( top: 15 ),
+                        Padding(
+                          padding: const  EdgeInsets.only( top: 15 ),
                           child: Text(
-                            "Conta inicial",
-                            style: TextStyle(
+                            modelAccounts.name!,
+                            style: const TextStyle(
                               color: OrgaliveColors.whiteSmoke,
                               fontWeight: FontWeight.w500,
                               fontSize: 22,
@@ -414,7 +406,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
                       TextButton(
                         onPressed: () {
-                          _updateVale( _controllerValue.text.trim().replaceAll("R\$ ", ""), document );
+                          _updateVale( _controllerValue.text.trim().replaceAll("R\$ ", ""), modelAccounts.document! );
                           Navigator.pop(context);
                         },
                         child: const Text(
@@ -439,7 +431,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
     );
   }
 
-  // atualizar o valor da cotna
+  // atualizar o valor da conta
   _updateVale( String value, String document ) {
 
     var data = {
@@ -458,14 +450,8 @@ class _SettingAccountsState extends State<SettingAccounts> {
   _refresh() async {
 
     await Future.delayed(const Duration(seconds: 0, milliseconds: 200));
-
-    if ( _isLoading == false ) {
-
-      setState(() {
-        _isLoading = true;
-        _listAccounts.clear();
-      });
-
+    if ( _accountsMobx.isLoading == false ) {
+      _accountsMobx.clear();
     }
   }
 
@@ -478,12 +464,15 @@ class _SettingAccountsState extends State<SettingAccounts> {
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
-
     _connectionMobx = Provider.of<ConnectionMobx>(context);
-
     await _connectionMobx.verifyConnection();
     _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
+  }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _accountsMobx.clear();
   }
 
   @override
@@ -524,7 +513,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
               builder: ( context, snapshot ) {
 
                 // verificando conexão
-                if ( _listAccounts.isNotEmpty ) {
+                if ( _accountsMobx.listAccounts.isNotEmpty ) {
 
                 } else {
                   if ( snapshot.hasError ) {
@@ -544,9 +533,9 @@ class _SettingAccountsState extends State<SettingAccounts> {
                       color: OrgaliveColors.darkGray,
                     );
 
-                  } else if ( _listAccounts.isEmpty ) {
+                  } else if ( _accountsMobx.listAccounts.isEmpty ) {
 
-                    if ( _isLoading == true ) {
+                    if ( _accountsMobx.isLoading == true ) {
 
                       return const CircularProgressIndicator(
                         color: OrgaliveColors.darkGray,
@@ -565,9 +554,9 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
                     }
 
-                  }  else if ( _listAccounts == [] ) {
+                  }  else if ( _accountsMobx.listAccounts == [] ) {
 
-                    if ( _isLoading == true ) {
+                    if ( _accountsMobx.isLoading == true ) {
 
                       return const CircularProgressIndicator(
                         color: OrgaliveColors.darkGray,
@@ -591,10 +580,10 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
                 return Scrollbar(
                   child: ListView.builder(
-                    itemCount: _listAccounts.length,
+                    itemCount: _accountsMobx.listAccounts.length,
                     itemBuilder: (context, index) {
 
-                      ModelAccounts modelAccounts = _listAccounts[index];
+                      ModelAccounts modelAccounts = _accountsMobx.listAccounts[index];
 
                       return Padding(
                         padding: const EdgeInsets.fromLTRB(16, 10, 16, 5),
@@ -685,7 +674,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
                                           GestureDetector(
                                             onTap: () {
-                                              _editValue( modelAccounts.value!, modelAccounts.document! );
+                                              _editValue( modelAccounts );
                                             },
                                             child: const FaIcon(
                                               FontAwesomeIcons.penToSquare,

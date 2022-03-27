@@ -63,7 +63,6 @@ class AccountFunction {
 
     List<ModelAccounts> list = [];
 
-    print("data => ${data.docs}");
     for ( var item in data.docs ) {
 
       ModelAccounts modelAccounts = ModelAccounts(
@@ -139,7 +138,7 @@ class AccountFunction {
     String userUid, String category, String oldValue, int screenActive,
     String accountId, List<XFile>? imageFileList, String registerValue,
     String type, String description, DateTime daySelected, context,
-    String? originAccountId
+    String? originAccountId, String? originValue,
   ) async {
 
     // salvar arquivo
@@ -181,19 +180,33 @@ class AccountFunction {
 
     await _db.collection("releases").doc(dateNow).set(data);
 
-    updateAccount( value, oldValue, screenActive, accountId, context, originAccountId );
+    updateAccount( value, oldValue, screenActive, accountId, context, originAccountId, originValue );
   }
 
   // atualizar o valor da conta
-  updateAccount( num value, String oldValue, int screenActive, String accountId, context, String? originAccountId ) async {
-
-    num valueParse = num.parse(oldValue.replaceAll(".", "").replaceAll(",", "."));
+  updateAccount( num value, String oldValue, int screenActive, String accountId, context, String? originAccountId, String? originValue ) async {
+    num valueParse = num.parse(
+        oldValue.replaceAll(".", "").replaceAll(",", "."));
 
     String newValue;
-    if ( screenActive == 2 ) {
+    if ( screenActive == 1 ) {
+      newValue = decrementValue(valueParse, value);
+    } else if ( screenActive == 2 ) {
       newValue = sumValue(valueParse, value);
     } else {
-      newValue = decrementValue(valueParse, value);
+      newValue = sumValue(valueParse, value);
+
+      if ( originAccountId != null ) {
+
+        num originValueParse = num.parse(originValue!.replaceAll(".", "").replaceAll(",", "."));
+        String newOriginValue = decrementValue(originValueParse, value);
+        var originData = {
+          "value": newOriginValue,
+        };
+
+        _db.collection("accounts").doc(originAccountId).update(originData);
+      }
+
     }
 
     var data = {
@@ -201,10 +214,6 @@ class AccountFunction {
     };
 
     _db.collection("accounts").doc(accountId).update(data);
-
-    if ( originAccountId != null ) {
-      _db.collection("accounts").doc(originAccountId).update(data);
-    }
 
     Navigator.pushAndRemoveUntil(
       context,

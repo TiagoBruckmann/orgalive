@@ -37,6 +37,7 @@ class BodyTransferRelease extends StatelessWidget {
     String _accountId = "";
     String _oldValue = "";
     String _originAccountId = "";
+    String _originOldValue = "";
     String _category = "";
     /*
     String _timeExpense = "month";
@@ -121,6 +122,7 @@ class BodyTransferRelease extends StatelessWidget {
           _daySelected,
           context,
           _originAccountId,
+          _originOldValue,
         );
       }
     }
@@ -248,7 +250,7 @@ class BodyTransferRelease extends StatelessWidget {
               },
               onChanged: ( item ) {
                 _originAccountId = item!.document!;
-                // _originOldValue = item.value!;
+                _originOldValue = item.value!;
               },
               dropdownBuilder: (BuildContext context, item) {
                 return Container(
@@ -272,7 +274,7 @@ class BodyTransferRelease extends StatelessWidget {
                       children: [
                         Text(
                           (item == null)
-                          ? "Selecione uma conta de origim"
+                          ? "Selecione uma conta de origem"
                           : "${item.name}",
                           style: const TextStyle(
                             color: OrgaliveColors.whiteSmoke,

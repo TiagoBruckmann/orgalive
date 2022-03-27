@@ -46,7 +46,7 @@ class _DashboardState extends State<Dashboard> {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // busca a hora atual
-  _getInfos() async {
+  _getInfo() async {
 
     FirebaseAuth auth = FirebaseAuth.instance;
     User? userData = auth.currentUser;
@@ -131,7 +131,7 @@ class _DashboardState extends State<Dashboard> {
   @override
   void initState() {
     super.initState();
-    _getInfos();
+    _getInfo();
     Analytics().sendScreen("Dashboard");
   }
 
