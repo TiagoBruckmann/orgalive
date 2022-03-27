@@ -155,8 +155,6 @@ class LoginOptions extends StatelessWidget {
               child: Column(
                 children: [
 
-                  // logo
-
                   // textos
                   ListTile(
                     title: Text(

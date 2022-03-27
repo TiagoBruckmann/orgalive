@@ -108,7 +108,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
   _validateFields() {
 
     // valores
-    if ( _controllerExpense.text == "R\$ 0,00" || _controllerProfit.text == "R\$ 0,00" ) {
+    if ( _controllerExpense.text == "R\$ 0,00" && _controllerProfit.text == "R\$ 0,00" ) {
       CustomSnackBar(context, "Insira um valor válido", OrgaliveColors.redDefault);
     }
 

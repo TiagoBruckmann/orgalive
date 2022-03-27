@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 // import dos modelos
 import 'package:orgalive/model/core/firebase/model_firebase.dart';
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/model/core/styles/app_images.dart';
 import 'package:orgalive/model/model_users.dart';
 
 // import das telas
@@ -200,12 +201,10 @@ class _EmailState extends State<Email> {
                 children: [
 
                   // logo
-                  /*
                   Image.asset(
                     AppImages.logo,
                     width: 250,
                   ),
-                  */
 
                   // email
                   Padding(

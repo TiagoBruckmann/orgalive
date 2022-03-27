@@ -2,13 +2,13 @@
 import 'package:flutter/material.dart';
 
 // import dos pacotes
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
 
 // import dos modelos
 import 'package:orgalive/model/core/firebase/model_firebase.dart';
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/model/core/styles/app_images.dart';
 
 // import das telas
 import 'package:orgalive/screens/widgets/loading_connection.dart';
@@ -77,18 +77,17 @@ class _NotificationsState extends State<Notifications> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular( 10 ),
                       ),
-                      child: const ListTile(
+                      child: ListTile(
                         // no lugar do icone vai a logo do app
                         leading: CircleAvatar(
-                          backgroundColor: OrgaliveColors.darkGray,
+                          backgroundColor: OrgaliveColors.whiteSmoke,
                           radius: 18,
-                          child: FaIcon(
-                            FontAwesomeIcons.bell,
-                            color: OrgaliveColors.bossanova,
-                            size: 22,
+                          child: Image.asset(
+                            AppImages.logo,
+                            width: 30,
                           ),
                         ),
-                        title: Text(
+                        title: const Text(
                           "Mensagem da notificação",
                           style: TextStyle(
                             color: OrgaliveColors.whiteSmoke,

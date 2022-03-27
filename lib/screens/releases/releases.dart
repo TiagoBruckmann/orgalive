@@ -20,6 +20,7 @@ import 'package:orgalive/screens/widgets/loading_connection.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
+import 'package:orgalive/mobx/releases/release_mobx.dart';
 
 class Releases extends StatefulWidget {
   const Releases({Key? key}) : super(key: key);
@@ -31,8 +32,6 @@ class Releases extends StatefulWidget {
 class _ReleasesState extends State<Releases> {
 
   // variaveis da tela
-  final List<ModelRelease> _listRelease = [];
-  bool _isLoading =  true;
   final DateTime _currentYear = DateTime.now();
   String? _userUid;
 
@@ -40,8 +39,9 @@ class _ReleasesState extends State<Releases> {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // gerenciadores de estado
+  final ReleaseMobx _releaseMobx = ReleaseMobx();
   late ConnectionMobx _connectionMobx;
-  
+
   // busca dos lancamentos do mes
   Future<List<ModelRelease>> _getReleases() async {
 
@@ -55,13 +55,12 @@ class _ReleasesState extends State<Releases> {
     String month = ReleaseFunction().formatDate(_currentYear.month);
     String date = "${_currentYear.year}$month";
 
-    if ( _listRelease.isEmpty && _isLoading == true ) {
+    if ( _releaseMobx.listReleases.isEmpty && _releaseMobx.isLoading == true ) {
 
       var data = await _db.collection("releases")
         .where("user_uid", isEqualTo: _userUid)
         .get();
 
-      List<ModelRelease> list = [];
       for ( var item in data.docs ) {
 
         if ( item["document"].toString().contains(date) ) {
@@ -78,32 +77,19 @@ class _ReleasesState extends State<Releases> {
             item["value"],
           );
 
-          list.add(modelRelease);
+          _releaseMobx.setNew(modelRelease);
         }
       }
-
-      setState(() {
-        _listRelease.addAll(list);
-        _isLoading = false;
-      });
-
+      _releaseMobx.updLoading(false);
     }
-
-    return _listRelease;
+    return _releaseMobx.listReleases;
   }
 
   // recarregamento da tela
   _refresh() async {
-
     await Future.delayed(const Duration(seconds: 0, milliseconds: 200));
-
-    if ( _isLoading == false ) {
-
-      setState(() {
-        _isLoading = true;
-        _listRelease.clear();
-      });
-
+    if ( _releaseMobx.isLoading == false ) {
+      _releaseMobx.clear();
     }
   }
 
@@ -133,6 +119,7 @@ class _ReleasesState extends State<Releases> {
           appBar: AppBar(
             title: const Text("Lançamentos"),
           ),
+
           body: ( _connectionMobx.connectionStatus.toString() == "ConnectivityResult.none" )
           ? const LoadingConnection()
           : RefreshIndicator(
@@ -144,7 +131,7 @@ class _ReleasesState extends State<Releases> {
               builder: ( context, snapshot ) {
 
                 // verificando conexão
-                if ( _listRelease.isNotEmpty ) {
+                if ( _releaseMobx.listReleases.isNotEmpty ) {
 
                 } else {
                   if ( snapshot.hasError ) {
@@ -164,9 +151,9 @@ class _ReleasesState extends State<Releases> {
                       color: OrgaliveColors.darkGray,
                     );
 
-                  } else if ( _listRelease.isEmpty ) {
+                  } else if ( _releaseMobx.listReleases.isEmpty ) {
 
-                    if ( _isLoading == true ) {
+                    if ( _releaseMobx.isLoading == true ) {
 
                       return const CircularProgressIndicator(
                         color: OrgaliveColors.darkGray,
@@ -185,9 +172,9 @@ class _ReleasesState extends State<Releases> {
 
                     }
 
-                  }  else if ( _listRelease == [] ) {
+                  }  else if ( _releaseMobx.listReleases == [] ) {
 
-                    if ( _isLoading == true ) {
+                    if ( _releaseMobx.isLoading == true ) {
 
                       return const CircularProgressIndicator(
                         color: OrgaliveColors.darkGray,
@@ -210,10 +197,10 @@ class _ReleasesState extends State<Releases> {
                 }
 
                 return ListView.builder(
-                  itemCount: _listRelease.length,
+                  itemCount: _releaseMobx.listReleases.length,
                   itemBuilder: ( context, index ) {
 
-                    ModelRelease modelRelease = _listRelease[index];
+                    ModelRelease modelRelease = _releaseMobx.listReleases[index];
 
                     return Column(
                       children: [
@@ -223,7 +210,7 @@ class _ReleasesState extends State<Releases> {
                           firstDate: DateTime(2021, 12, 06),
                           lastDate: DateTime(2023, 12, 06),
                           leftMargin: 16,
-                          onDateSelected: (date) => print(date),
+                          onDateSelected: (date) => _releaseMobx.filterReleases( date!, context ),
                           monthColor: OrgaliveColors.silver,
                           dayColor: OrgaliveColors.bossanova,
                           activeDayColor: OrgaliveColors.silver,
@@ -278,7 +265,7 @@ class _ReleasesState extends State<Releases> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text(
-                                "Conta inicial",
+                                "",
                                 style: TextStyle(
                                   color: OrgaliveColors.bossanova,
                                   fontWeight: FontWeight.w500,
