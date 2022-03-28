@@ -39,12 +39,8 @@ class BodyTransferRelease extends StatelessWidget {
     String _originAccountId = "";
     String _originOldValue = "";
     String _category = "";
-    /*
-    String _timeExpense = "month";
-    String _nameTimeExpense = "fixa";
-    String _installments = "2";
-    String _nameInstallments = "parcelada";
-    */
+    String _nameFixed = "";
+    String _nameInstallments = "";
 
     // detalhes do documento
     final _picker = ImagePicker();
@@ -121,6 +117,8 @@ class BodyTransferRelease extends StatelessWidget {
           _controllerDescription.text,
           _daySelected,
           context,
+          _nameFixed,
+          _nameInstallments,
           _originAccountId,
           _originOldValue,
         );

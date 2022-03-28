@@ -1,22 +1,24 @@
 // imports nativos do flutter
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 // import dos pacotes
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:calendar_timeline/calendar_timeline.dart';
-// import 'package:awesome_select/awesome_select.dart';
 import 'package:find_dropdown/find_dropdown.dart';
 import 'package:image_picker/image_picker.dart';
 
 // import dos modelos
-// import 'package:orgalive/model/core/model_choices.dart' as model_choices;
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
 import 'package:orgalive/model/functions/accounts/account.dart';
 import 'package:orgalive/model/model_categories.dart';
 import 'package:orgalive/model/model_accounts.dart';
 
 // import das telas
+import 'package:orgalive/screens/releases/widgets/modals/modal_installments.dart';
+import 'package:orgalive/screens/releases/widgets/modals/modal_fixed.dart';
 import 'package:orgalive/screens/widgets/message_widget.dart';
 
 class BodyFutureReleases extends StatefulWidget {
@@ -44,12 +46,48 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
   String _oldValue = "";
   String _accountId = "";
   String _category = "";
-  /*
-  String _timeExpense = "month";
-  String _nameTimeExpense = "fixa";
-  String _installments = "2";
-  String _nameInstallments = "parcelada";
-   */
+  String _nameFixed = "";
+  String _nameInstallments = "";
+
+  // abrir fixados
+  _goToFixed() {
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ModalFixed(
+          screenActive: widget.screenActive,
+        ),
+      ),
+    ).then( _onGoBackFixed );
+  }
+
+  // abrir parcelamento
+  _goToInstallments() {
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ModalInstallments(
+          screenActive: widget.screenActive,
+        ),
+      ),
+    ).then( _onGoBackInstallments );
+  }
+
+  // setar fixado
+  FutureOr _onGoBackFixed( dynamic value ) {
+    setState(() {
+      _nameFixed = value;
+    });
+  }
+
+  // setar parcela
+  FutureOr _onGoBackInstallments( dynamic value ) {
+    setState(() {
+      _nameInstallments = value;
+    });
+  }
 
   // detalhes do documento
   final _picker = ImagePicker();
@@ -130,6 +168,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
         value = _controllerProfit.text;
         type = "Lucro";
       }
+
       AccountFunction().saveRelease(
         widget.userUid,
         _category,
@@ -142,6 +181,8 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
         _controllerDescription.text,
         _daySelected,
         context,
+        _nameFixed,
+        _nameInstallments,
         null,
         null,
       );
@@ -515,79 +556,38 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
           ),
 
           // despesa fixa
-          /*
-          SmartSelect<String?>.single(
-            title: ( widget.screenActive == 1 )
-            ? "Despesa fixa"
-            : "Receita fixa",
-            selectedValue: _timeExpense,
-            choiceItems: model_choices.fixed,
-
-            onChange: (selected) {
-              setState(() {
-                _timeExpense = selected.value!;
-                _nameTimeExpense = selected.title!;
-              });
-            },
-            modalType: S2ModalType.bottomSheet,
-            tileBuilder: (context, state) {
-              return S2Tile.fromState(
-                state,
-                isTwoLine: false,
-                title: Padding(
-                  padding: const EdgeInsets.only( left: 20 ),
-                  child: Text(
-                    ( _nameTimeExpense == "fixa" && widget.screenActive == 1 )
-                    ? "Despesa fixa"
-                    : ( _nameTimeExpense == "fixa" && widget.screenActive == 2 )
-                    ? "Receita fixa"
-                    : ( _nameTimeExpense != "fixa" && widget.screenActive == 1 )
-                    ? "Despesa fixa $_nameTimeExpense"
-                    : "Receita fixa $_nameTimeExpense",
-                    style: const TextStyle(
-                      color: OrgaliveColors.whiteSmoke,
-                    ),
-                  ),
-                ),
-              );
-            },
+          ListTile(
+            title: Text(
+              ( widget.screenActive == 1 && _nameFixed.isEmpty )
+              ? "Despesa fixa"
+              : ( widget.screenActive == 2 && _nameFixed.isEmpty )
+              ? "Receita fixa"
+              : ( widget.screenActive == 1 && _nameFixed.isNotEmpty )
+              ? "Despesa fixa $_nameFixed"
+              : "Receita fixa $_nameFixed",
+              style: const TextStyle(
+                color: OrgaliveColors.whiteSmoke,
+              ),
+            ),
+            onTap: () => _goToFixed(),
           ),
 
           // depesa parcelada
-          SmartSelect<String?>.single(
-            title: ( widget.screenActive == 1 )
-            ? "Despesa parcelada"
-            : "Receita parcelada",
-            selectedValue: _installments,
-            choiceItems: model_choices.installments,
-            onChange: (selected) {
-              setState(() {
-                _installments = selected.value!;
-                _nameInstallments = selected.title!;
-              });
-            },
-            modalType: S2ModalType.bottomSheet,
-            tileBuilder: (context, state) {
-              return S2Tile.fromState(
-                state,
-                isTwoLine: false,
-                title: Padding(
-                  padding: const EdgeInsets.only( left: 20 ),
-                  child: Text(
-                    ( _nameInstallments == "parcelada" && widget.screenActive == 1 )
-                    ? "Despesa parcelada"
-                    : ( _nameInstallments == "parcelada" && widget.screenActive == 2 )
-                    ? "Receita parcelada"
-                    : "Parcelado em $_nameInstallments",
-                    style: const TextStyle(
-                      color: OrgaliveColors.whiteSmoke,
-                    ),
-                  ),
-                ),
-              );
-            },
+          ListTile(
+            title: Text(
+              ( widget.screenActive == 1 && _nameInstallments.isEmpty )
+              ? "Despesa parcelada"
+              : ( widget.screenActive == 2 && _nameInstallments.isEmpty )
+              ? "Receita parcelada"
+              : ( widget.screenActive == 1 && _nameInstallments.isNotEmpty )
+              ? "Despesa parcelada em $_nameInstallments"
+              : "Receota parcelada em $_nameInstallments",
+              style: const TextStyle(
+                color: OrgaliveColors.whiteSmoke,
+              ),
+            ),
+            onTap: () => _goToInstallments(),
           ),
-          */
 
           // detalhes do lancamento
           ExpansionTile(

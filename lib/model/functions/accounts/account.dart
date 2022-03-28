@@ -24,21 +24,17 @@ class AccountFunction {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   decrementValue( num oldValue, num newValue ) {
-
     num value = oldValue - newValue;
     double valueReplaced = double.parse(value.toString());
     final MoneyMaskedTextController _finalValue = MoneyMaskedTextController( thousandSeparator: '.', decimalSeparator: ',', initialValue: valueReplaced );
     return _finalValue.text;
-
   }
 
   sumValue( num oldValue, num newValue ) {
-
     num value = oldValue + newValue;
     double valueReplaced = double.parse(value.toString());
     final MoneyMaskedTextController _finalValue = MoneyMaskedTextController( thousandSeparator: '.', decimalSeparator: ',', initialValue: valueReplaced );
     return _finalValue.text;
-
   }
 
   Future<List<ModelAccounts>> getAccounts(String userUid, String? originDocumentId ) async {
@@ -138,7 +134,7 @@ class AccountFunction {
     String userUid, String category, String oldValue, int screenActive,
     String accountId, List<XFile>? imageFileList, String registerValue,
     String type, String description, DateTime daySelected, context,
-    String? originAccountId, String? originValue,
+    String nameFixed, String nameInstallments, String? originAccountId, String? originValue,
   ) async {
 
     // salvar arquivo
@@ -150,7 +146,7 @@ class AccountFunction {
     num value = num.parse(registerValue.replaceAll("R\$ ", "").replaceAll(".", "").replaceAll(",", "."));
 
     DateTime now = DateTime.now();
-    String dateNow = DateFormat('yyyyMMddkkmmss').format(now);
+    String dateDocument = DateFormat('yyyyMMddkkmmss').format(daySelected);
 
     int? status;
     if ( daySelected.month >= now.month && daySelected.day >= now.day ) {
@@ -168,7 +164,7 @@ class AccountFunction {
 
     var data = {
       "user_uid": userUid,
-      "document": dateNow,
+      "document": dateDocument,
       "value": valueFormatted,
       "description": description,
       "type": type,
@@ -178,7 +174,45 @@ class AccountFunction {
       "status": status,
     };
 
-    await _db.collection("releases").doc(dateNow).set(data);
+    await _db.collection("releases").doc(dateDocument).set(data);
+
+    if ( nameFixed.isNotEmpty ) {
+
+      DateFormat futureDate;
+      switch( nameFixed ){
+        case "Mensal":
+          break;
+        case "Bimestral":
+          break;
+        case "Trimestral":
+          break;
+        case "Semestral":
+          break;
+        case "Anual":
+          break;
+      }
+
+      String dateSchedule = DateFormat('yyyyMMddkkmmss').format(daySelected);
+
+      var data = {
+        "user_uid": userUid,
+        "document": dateDocument,
+        "value": valueFormatted,
+        "description": description,
+        "type": type,
+        "category": category,
+        "account_id": accountId,
+        "date": daySelected.toString(),
+        "status": 0,
+      };
+
+      await _db.collection("releases").doc(dateDocument).set(data);
+
+    } else if ( nameInstallments.isNotEmpty ) {
+
+      print("parcelado");
+
+    }
 
     updateAccount( value, oldValue, screenActive, accountId, context, originAccountId, originValue );
   }
