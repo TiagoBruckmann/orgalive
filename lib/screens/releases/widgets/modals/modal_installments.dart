@@ -68,7 +68,7 @@ class ModalInstallments extends StatelessWidget {
               ),
             ),
 
-            for ( int i = 1; i < 16; i++ )
+            for ( int i = 1; i < 6; i++ )
               ListTile(
                 title: Text(
                   ( i == 1 )

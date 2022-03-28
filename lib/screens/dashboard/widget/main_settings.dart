@@ -13,7 +13,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:orgalive/screens/dashboard/setting_accounts.dart';
 
 // injecao de dependencias
-import 'package:orgalive/mobx/accounts/default_accout_mobx/default_account_mobx.dart';
+import 'package:orgalive/mobx/accounts/default_account_mobx.dart';
 
 class MainSettings extends StatefulWidget {
 

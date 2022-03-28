@@ -47,4 +47,34 @@ class ReleaseFunction {
 
     return newDate;
   }
+
+  calculateMonth( int month ) {
+    if ( month == 13 ) {
+      month = 1;
+    } else if ( month == 14 ) {
+      month = 2;
+    } else if ( month == 15 ) {
+      month = 3;
+    } else if ( month == 16 ) {
+      month = 4;
+    } else if ( month == 17 ) {
+      month = 5;
+    } else if ( month == 18 ) {
+      month = 6;
+    } else if ( month == 19 ) {
+      month = 7;
+    } else if ( month == 20 ) {
+      month = 8;
+    } else if ( month == 21 ) {
+      month = 9;
+    } else if ( month == 22 ) {
+      month = 10;
+    } else if ( month == 23 ) {
+      month = 11;
+    } else if ( month == 24 ) {
+      month = 12;
+    }
+
+    return month;
+  }
 }

@@ -4,6 +4,7 @@ import 'dart:async';
 
 // import dos modelos
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/model/functions/releases/releases.dart';
 import 'package:orgalive/model/model_categories.dart';
 import 'package:orgalive/model/model_accounts.dart';
 
@@ -90,9 +91,9 @@ class AccountFunction {
     for ( var item in data.docs ) {
 
       ModelCategories modelCategories = ModelCategories(
-        item["uid"],
-        item["name"],
         item["icon"],
+        item["name"],
+        item["uid"],
         /*
         item["document"],
         item["default"],
@@ -176,51 +177,136 @@ class AccountFunction {
 
     await _db.collection("releases").doc(dateDocument).set(data);
 
-    if ( nameFixed.isNotEmpty ) {
-
-      DateFormat futureDate;
-      switch( nameFixed ){
-        case "Mensal":
-          break;
-        case "Bimestral":
-          break;
-        case "Trimestral":
-          break;
-        case "Semestral":
-          break;
-        case "Anual":
-          break;
-      }
-
-      String dateSchedule = DateFormat('yyyyMMddkkmmss').format(daySelected);
-
-      var data = {
-        "user_uid": userUid,
-        "document": dateDocument,
-        "value": valueFormatted,
-        "description": description,
-        "type": type,
-        "category": category,
-        "account_id": accountId,
-        "date": daySelected.toString(),
-        "status": 0,
-      };
-
-      await _db.collection("releases").doc(dateDocument).set(data);
-
-    } else if ( nameInstallments.isNotEmpty ) {
-
-      print("parcelado");
-
-    }
+    futureInstallments(
+      nameFixed,
+      daySelected,
+      userUid,
+      valueFormatted,
+      description,
+      type,
+      category,
+      accountId,
+      nameInstallments,
+    );
 
     updateAccount( value, oldValue, screenActive, accountId, context, originAccountId, originValue );
   }
 
+  futureInstallments(
+      String nameFixed, DateTime daySelected, String userUid, String valueFormatted,
+      String description, String type, String category, String accountId, String nameInstallments,
+  ) async {
+
+    if ( nameFixed.isNotEmpty ) {
+
+      int day = daySelected.day;
+      int month = daySelected.month;
+      int year = daySelected.year;
+      while ( year <= 2023 && month < 12 ) {
+
+        String dateSchedule;
+        DateTime? dateFormatted;
+        switch( nameFixed ) {
+          case "Mensal":
+            month = month + 1;
+            break;
+          case "Bimestral":
+            month = month + 2;
+            break;
+          case "Trimestral":
+            month = month + 3;
+            break;
+          case "Semestral":
+            month = month + 6;
+            break;
+          case "Anual":
+            month = month + 12;
+            break;
+        }
+
+        if ( month > 12 ) {
+          year = year + 1;
+        }
+        month = ReleaseFunction().calculateMonth(month);
+
+        if ( month < 10 ) {
+          dateFormatted = DateTime.parse("$year-0$month-$day 00:00:00.000");
+        } else {
+          dateFormatted = DateTime.parse("$year-$month-$day 00:00:00.000");
+        }
+
+        dateSchedule = DateFormat('yyyyMMddkkmmss').format(dateFormatted);
+
+        var dataScheduled = {
+          "user_uid": userUid,
+          "document": dateSchedule,
+          "value": valueFormatted,
+          "description": description,
+          "type": type,
+          "category": category,
+          "account_id": accountId,
+          "date": dateFormatted.toString(),
+          "status": 0,
+        };
+
+        await _db.collection("releases").doc(dateSchedule).set(dataScheduled);
+
+      }
+
+    } else if ( nameInstallments.isNotEmpty ) {
+
+      int day = daySelected.day;
+      int month = daySelected.month;
+      int year = daySelected.year;
+
+      int installment;
+      if ( nameInstallments.contains(" Ano(s)") ) {
+        int years = int.parse(nameInstallments.replaceAll(" Ano(s)", ""));
+        installment = years * 12;
+      } else if ( nameInstallments.contains(" Meses") ) {
+        installment = int.parse(nameInstallments.replaceAll(" Meses", ""));
+      } else {
+        installment = 1;
+      }
+
+      for ( int i = 0; i < installment; i++ ) {
+
+        month = ReleaseFunction().calculateMonth(month + i + 1);
+
+        if (month == 1) {
+          year = year + 1;
+        }
+
+        DateTime? dateFormatted;
+        if (month < 10) {
+          dateFormatted = DateTime.parse("$year-0$month-$day 00:00:00.000");
+        } else {
+          dateFormatted = DateTime.parse("$year-$month-$day 00:00:00.000");
+        }
+
+        String dateSchedule = DateFormat('yyyyMMddkkmmss').format(dateFormatted);
+
+        var dataScheduled = {
+          "user_uid": userUid,
+          "document": dateSchedule,
+          "value": valueFormatted,
+          "description": description,
+          "type": type,
+          "category": category,
+          "account_id": accountId,
+          "date": dateFormatted.toString(),
+          "status": 0,
+        };
+
+        await _db.collection("releases").doc(dateSchedule).set(dataScheduled);
+      }
+    }
+
+  }
+
   // atualizar o valor da conta
   updateAccount( num value, String oldValue, int screenActive, String accountId, context, String? originAccountId, String? originValue ) async {
-    num valueParse = num.parse(
-        oldValue.replaceAll(".", "").replaceAll(",", "."));
+    num valueParse = num.parse(oldValue.replaceAll(".", "").replaceAll(",", "."));
 
     String newValue;
     if ( screenActive == 1 ) {

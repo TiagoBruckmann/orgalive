@@ -19,8 +19,8 @@ import 'package:orgalive/screens/widgets/loading_connection.dart';
 import 'package:orgalive/screens/widgets/message_widget.dart';
 
 // gerenciadores de estado
+import 'package:orgalive/mobx/accounts/default_account_mobx.dart';
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
-import 'package:orgalive/mobx/accounts/accounts_mobx.dart';
 
 class SettingAccounts extends StatefulWidget {
 
@@ -37,16 +37,16 @@ class _SettingAccountsState extends State<SettingAccounts> {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // gerenciadores de estado
-  final AccountsMobx _accountsMobx = AccountsMobx();
+  final DefaultAccountMobx _defaultAccountMobx = DefaultAccountMobx();
   late ConnectionMobx _connectionMobx;
 
   // buscar contas
   Future<List<ModelAccounts>> _getAccounts() async {
 
-    if ( _accountsMobx.isLoading == true  ) {
+    if ( _defaultAccountMobx.isLoading == true  ) {
       var data = await _db.collection("accounts").where("user_uid", isEqualTo: widget.userUid).get();
 
-      if ( data.docs.length > _accountsMobx.listAccounts.length ) {
+      if ( data.docs.length > _defaultAccountMobx.listAccounts.length ) {
 
         for ( var item in data.docs ) {
 
@@ -58,13 +58,13 @@ class _SettingAccountsState extends State<SettingAccounts> {
             item["default"],
           );
 
-          _accountsMobx.setNew(modelAccounts);
+          _defaultAccountMobx.setNew(modelAccounts);
         }
 
-        _accountsMobx.updLoading(false);
+        _defaultAccountMobx.updLoading(false);
       }
     }
-    return _accountsMobx.listAccounts;
+    return _defaultAccountMobx.listAccounts;
   }
 
   // nova conta
@@ -260,7 +260,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
     String dateNow = DateFormat('yyyyMMddkkmmss').format(now);
 
     bool? defaultAccount;
-    if ( _accountsMobx.listAccounts.isEmpty ) {
+    if ( _defaultAccountMobx.listAccounts.isEmpty ) {
       defaultAccount = true;
     } else {
       defaultAccount = false;
@@ -406,7 +406,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
                       TextButton(
                         onPressed: () {
-                          _updateVale( _controllerValue.text.trim().replaceAll("R\$ ", ""), modelAccounts.document! );
+                          _defaultAccountMobx.updateVale( _controllerValue.text.trim().replaceAll("R\$ ", ""), modelAccounts.document!, _db, context );
                           Navigator.pop(context);
                         },
                         child: const Text(
@@ -431,27 +431,12 @@ class _SettingAccountsState extends State<SettingAccounts> {
     );
   }
 
-  // atualizar o valor da conta
-  _updateVale( String value, String document ) {
-
-    var data = {
-      "value": value.replaceAll(",", ".")
-    };
-
-    _db.collection("accounts").doc(document).update(data);
-
-    CustomSnackBar( context, "Conta atualizada com sucesso", OrgaliveColors.greenDefault );
-
-    _refresh();
-
-  }
-
   // atualizar a tela
   _refresh() async {
 
     await Future.delayed(const Duration(seconds: 0, milliseconds: 200));
-    if ( _accountsMobx.isLoading == false ) {
-      _accountsMobx.clear();
+    if ( _defaultAccountMobx.isLoading == false ) {
+      _defaultAccountMobx.clear();
     }
   }
 
@@ -472,7 +457,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
   @override
   void dispose() {
     super.dispose();
-    _accountsMobx.clear();
+    _defaultAccountMobx.clear();
   }
 
   @override
@@ -513,7 +498,7 @@ class _SettingAccountsState extends State<SettingAccounts> {
               builder: ( context, snapshot ) {
 
                 // verificando conexão
-                if ( _accountsMobx.listAccounts.isNotEmpty ) {
+                if ( _defaultAccountMobx.listAccounts.isNotEmpty ) {
 
                 } else {
                   if ( snapshot.hasError ) {
@@ -533,9 +518,9 @@ class _SettingAccountsState extends State<SettingAccounts> {
                       color: OrgaliveColors.darkGray,
                     );
 
-                  } else if ( _accountsMobx.listAccounts.isEmpty ) {
+                  } else if ( _defaultAccountMobx.listAccounts.isEmpty ) {
 
-                    if ( _accountsMobx.isLoading == true ) {
+                    if ( _defaultAccountMobx.isLoading == true ) {
 
                       return const CircularProgressIndicator(
                         color: OrgaliveColors.darkGray,
@@ -554,9 +539,9 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
                     }
 
-                  }  else if ( _accountsMobx.listAccounts == [] ) {
+                  }  else if ( _defaultAccountMobx.listAccounts == [] ) {
 
-                    if ( _accountsMobx.isLoading == true ) {
+                    if ( _defaultAccountMobx.isLoading == true ) {
 
                       return const CircularProgressIndicator(
                         color: OrgaliveColors.darkGray,
@@ -580,10 +565,10 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
                 return Scrollbar(
                   child: ListView.builder(
-                    itemCount: _accountsMobx.listAccounts.length,
+                    itemCount: _defaultAccountMobx.listAccounts.length,
                     itemBuilder: (context, index) {
 
-                      ModelAccounts modelAccounts = _accountsMobx.listAccounts[index];
+                      ModelAccounts modelAccounts = _defaultAccountMobx.listAccounts[index];
 
                       return Padding(
                         padding: const EdgeInsets.fromLTRB(16, 10, 16, 5),

@@ -335,12 +335,12 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                     ),
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
+                      children: [
                         Text(
-                          /*( item!.name == null )
-                          ? */"Selecione uma categoria"/*
-                          : "${item.name}"*/,
-                          style: TextStyle(
+                          ( _category.isEmpty )
+                          ? "Selecione uma categoria"
+                          : "${item!.name}",
+                          style: const TextStyle(
                             color: OrgaliveColors.whiteSmoke,
                           ),
                         ),
@@ -377,7 +377,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                         ),
                       ),
                       title: Text(
-                        "${item.name}",
+                        "${item.icon}",
                         style: const TextStyle(
                           color: OrgaliveColors.whiteSmoke,
                         ),
@@ -458,8 +458,8 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                       children: [
                         Text(
                           (item == null)
-                              ? "Selecione uma conta"
-                              : "${item.name}",
+                          ? "Selecione uma conta"
+                          : "${item.name}",
                           style: const TextStyle(
                             color: OrgaliveColors.whiteSmoke,
                           ),
@@ -581,7 +581,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
               ? "Receita parcelada"
               : ( widget.screenActive == 1 && _nameInstallments.isNotEmpty )
               ? "Despesa parcelada em $_nameInstallments"
-              : "Receota parcelada em $_nameInstallments",
+              : "Receita parcelada em $_nameInstallments",
               style: const TextStyle(
                 color: OrgaliveColors.whiteSmoke,
               ),

@@ -9,6 +9,21 @@ part of 'default_account_mobx.dart';
 // ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic
 
 mixin _$DefaultAccountMobx on _DefaultAccountMobx, Store {
+  final _$isLoadingAtom = Atom(name: '_DefaultAccountMobx.isLoading');
+
+  @override
+  bool get isLoading {
+    _$isLoadingAtom.reportRead();
+    return super.isLoading;
+  }
+
+  @override
+  set isLoading(bool value) {
+    _$isLoadingAtom.reportWrite(value, super.isLoading, () {
+      super.isLoading = value;
+    });
+  }
+
   final _$accountIdAtom = Atom(name: '_DefaultAccountMobx.accountId');
 
   @override
@@ -95,8 +110,54 @@ mixin _$DefaultAccountMobx on _DefaultAccountMobx, Store {
   }
 
   @override
+  void updLoading(bool value) {
+    final _$actionInfo = _$_DefaultAccountMobxActionController.startAction(
+        name: '_DefaultAccountMobx.updLoading');
+    try {
+      return super.updLoading(value);
+    } finally {
+      _$_DefaultAccountMobxActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void updateVale(
+      String newValue, String document, dynamic _db, dynamic context) {
+    final _$actionInfo = _$_DefaultAccountMobxActionController.startAction(
+        name: '_DefaultAccountMobx.updateVale');
+    try {
+      return super.updateVale(newValue, document, _db, context);
+    } finally {
+      _$_DefaultAccountMobxActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void setNew(ModelAccounts modelAccounts) {
+    final _$actionInfo = _$_DefaultAccountMobxActionController.startAction(
+        name: '_DefaultAccountMobx.setNew');
+    try {
+      return super.setNew(modelAccounts);
+    } finally {
+      _$_DefaultAccountMobxActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void clear() {
+    final _$actionInfo = _$_DefaultAccountMobxActionController.startAction(
+        name: '_DefaultAccountMobx.clear');
+    try {
+      return super.clear();
+    } finally {
+      _$_DefaultAccountMobxActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   String toString() {
     return '''
+isLoading: ${isLoading},
 accountId: ${accountId},
 account: ${account},
 value: ${value},

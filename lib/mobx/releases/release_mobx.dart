@@ -15,9 +15,15 @@ class ReleaseMobx = _ReleaseMobx with _$ReleaseMobx;
 abstract class _ReleaseMobx with Store {
 
   @observable
+  String userUid = "";
+
+  @observable
   bool isLoading = true;
 
   ObservableList<ModelRelease> listReleases = ObservableList();
+
+  @action
+  void setUserUid( String value ) => userUid = value;
 
   @action
   void updLoading( bool value ) => isLoading = value;
@@ -26,7 +32,7 @@ abstract class _ReleaseMobx with Store {
   void setNew( ModelRelease modelRelease ) => listReleases.add(modelRelease);
 
   @action
-  filterReleases( DateTime dateFilter, context ) {
+  filterReleases( DateTime dateFilter, context ) async {
 
     String day = ReleaseFunction().formatDate(dateFilter.day);
     String month = ReleaseFunction().formatDate(dateFilter.month);
@@ -38,7 +44,6 @@ abstract class _ReleaseMobx with Store {
     }
 
     return listReleases;
-
   }
 
   @action

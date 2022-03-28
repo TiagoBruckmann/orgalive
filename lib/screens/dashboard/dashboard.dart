@@ -179,7 +179,7 @@ class _DashboardState extends State<Dashboard> {
                     child: Column(
                       children: [
 
-                        // saldo geral
+                        // Limite de gestos
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [

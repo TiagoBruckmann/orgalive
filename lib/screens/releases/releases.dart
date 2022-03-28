@@ -33,10 +33,6 @@ class _ReleasesState extends State<Releases> {
 
   // variaveis da tela
   final DateTime _currentYear = DateTime.now();
-  String? _userUid;
-
-  // variaveis do banco
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // gerenciadores de estado
   final ReleaseMobx _releaseMobx = ReleaseMobx();
@@ -45,11 +41,13 @@ class _ReleasesState extends State<Releases> {
   // busca dos lancamentos do mes
   Future<List<ModelRelease>> _getReleases() async {
 
-    if ( _userUid == null ) {
+    final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+    if ( _releaseMobx.userUid.isEmpty ) {
       FirebaseAuth auth = FirebaseAuth.instance;
       User? userData = auth.currentUser;
 
-      _userUid = userData!.uid;
+      _releaseMobx.setUserUid(userData!.uid);
     }
 
     String month = ReleaseFunction().formatDate(_currentYear.month);
@@ -58,7 +56,7 @@ class _ReleasesState extends State<Releases> {
     if ( _releaseMobx.listReleases.isEmpty && _releaseMobx.isLoading == true ) {
 
       var data = await _db.collection("releases")
-        .where("user_uid", isEqualTo: _userUid)
+        .where("user_uid", isEqualTo: _releaseMobx.userUid)
         .get();
 
       for ( var item in data.docs ) {
