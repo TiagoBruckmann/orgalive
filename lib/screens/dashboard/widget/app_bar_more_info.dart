@@ -1,6 +1,5 @@
 // imports nativos do flutter
 import 'package:flutter/material.dart';
-import 'package:orgalive/model/core/styles/app_images.dart';
 
 // import dos modelos
 import 'package:orgalive/model/core/styles/orgalive_colors.dart';
