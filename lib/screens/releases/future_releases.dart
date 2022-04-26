@@ -2,20 +2,20 @@
 import 'package:flutter/material.dart';
 
 // import dos pacotes
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
-import 'package:orgalive/screens/releases/widgets/body_transfer_release.dart';
 import 'package:provider/provider.dart';
 
 // import das telas
+import 'package:orgalive/screens/releases/widgets/body_transfer_release.dart';
 import 'package:orgalive/screens/releases/widgets/body_future_releases.dart';
 import 'package:orgalive/screens/widgets/loading_connection.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/firebase/model_firebase.dart';
+import 'package:orgalive/core/firebase/model_firebase.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
+import 'package:orgalive/mobx/users/users_mobx.dart';
 
 class FutureReleases extends StatefulWidget {
   const FutureReleases({Key? key}) : super(key: key);
@@ -28,9 +28,7 @@ class _FutureReleasesState extends State<FutureReleases> {
 
   // gerenciadores de estado
   late ConnectionMobx _connectionMobx;
-
-  // variaveis da tela
-  String _userUid = "";
+  late UsersMobx _usersMobx;
 
   // exibir tabs na tela
   TabController ?_tabController;
@@ -71,27 +69,17 @@ class _FutureReleasesState extends State<FutureReleases> {
     ),
   ];
 
-  // buscar as informacoes do usuario
-  _getInfos() async {
-
-    FirebaseAuth auth = FirebaseAuth.instance;
-    User? userData = auth.currentUser;
-
-    _userUid = userData!.uid;
-
-  }
-
   @override
   void initState() {
     super.initState();
     Analytics().sendScreen("future-releases");
-    _getInfos();
   }
 
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
 
+    _usersMobx = Provider.of<UsersMobx>(context);
     _connectionMobx = Provider.of<ConnectionMobx>(context);
 
     await _connectionMobx.verifyConnection();
@@ -134,17 +122,17 @@ class _FutureReleasesState extends State<FutureReleases> {
 
                 // despesa
                 Scaffold(
-                  body: BodyFutureReleases( screenActive: 1, userUid: _userUid, ),
+                  body: BodyFutureReleases( screenActive: 1, userUid: _usersMobx.userUid, ),
                 ),
 
                 // lucro
                 Scaffold(
-                  body: BodyFutureReleases( screenActive: 2, userUid: _userUid, ),
+                  body: BodyFutureReleases( screenActive: 2, userUid: _usersMobx.userUid, ),
                 ),
 
                 // transferencia
                 Scaffold(
-                  body: BodyTransferRelease( screenActive: 3, userUid: _userUid, )
+                  body: BodyTransferRelease( screenActive: 3, userUid: _usersMobx.userUid, )
                 ),
 
               ],

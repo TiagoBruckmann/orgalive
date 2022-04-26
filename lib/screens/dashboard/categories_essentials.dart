@@ -8,8 +8,8 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/firebase/model_firebase.dart';
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/firebase/model_firebase.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 import 'package:orgalive/model/model_categories.dart';
 
 // import das telas
@@ -37,50 +37,12 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
   // gerenciadores de estado
   late ConnectionMobx _connectionMobx;
 
-  /*
-  final List<ModelCategories> _listCategories = [
-    ModelCategories(
-        id: 1,
-        icon: "home",
-        name: "Casa",
-        selected: true,
-    ),
-    ModelCategories(
-      id: 2,
-      icon: "shoppingBag",
-      name: "Compras",
-      selected: false,
-    ),
-    ModelCategories(
-      id: 3,
-      icon: "user",
-      name: "Cuidados pessoais",
-      selected: false,
-    ),
-    ModelCategories(
-      id: 4,
-      icon: "receipt",
-      name: "Dívidas e empréstimos",
-      selected: true,
-    ),
-    ModelCategories(
-      id: 5,
-      icon: "graduationCap",
-      name: "Educação",
-      selected: true,
-      valueSpen: true,
-      selected: true,
-    ),
-  ];
-   */
-
   // buscar categorias
   Future<List<ModelCategories>> _getCategories() async {
 
     if ( _listCategories.isEmpty && _isLoading == true ) {
 
-      var data = await _db.collection("categories")
-          .get();
+      dynamic data = await _db.collection("categories").get();
 
       List<ModelCategories> list = [];
 
@@ -88,13 +50,11 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
 
         ModelCategories modelCategories = ModelCategories(
           item["uid"],
-          item["icon"],
           item["name"],
-          /*
           item["selected"],
           item["value_spending"],
           item["value_limit"],
-          */
+          double.parse(item["percentage"].toString()),
         );
 
         list.add(modelCategories);
@@ -108,6 +68,11 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
     }
 
     return _listCategories;
+  }
+
+  // ir para o cadastro de uma nova categoria
+  _goToNewCategory() {
+
   }
 
   _saveCategories() {
@@ -140,6 +105,17 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
         return Scaffold(
           appBar: AppBar(
             title: const Text("Categorias essenciais"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  _goToNewCategory();
+                },
+                child: const FaIcon(
+                  FontAwesomeIcons.circlePlus,
+                  color: OrgaliveColors.whiteSmoke,
+                ),
+              )
+            ],
           ),
 
           body: ( _connectionMobx.connectionStatus.toString() == "ConnectivityResult.none" )
@@ -190,7 +166,7 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
                               children: [
 
                                 Text(
-                                  "${modelCategories.name}",
+                                  modelCategories.name,
                                   style: const TextStyle(
                                     color: OrgaliveColors.whiteSmoke,
                                     fontWeight: FontWeight.w500,
@@ -200,14 +176,10 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
 
                                 Checkbox(
                                   activeColor: Theme.of(context).secondaryHeaderColor,
-                                  value: true, // modelCategories.selected,
+                                  value: modelCategories.selected,
                                   onChanged: (bool? value) {
                                     setState(() {
-                                      if ( value == true ) {
-                                        // modelCategories.selected = true;
-                                      } else {
-                                        // modelCategories.selected = false;
-                                      }
+                                      modelCategories.selected = !modelCategories.selected;
                                     });
                                   },
                                 ),

@@ -1,29 +1,25 @@
 class ModelCategories {
 
-  String? icon;
-  String? name;
-  String? uid;
-  /*
-  String? selected;
-  String? valueSpending;
-  String? valueLimit;
-   */
+  String uid = "";
+  String name = "";
+  bool selected = false;
+  String valueSpending = "";
+  String valueLimit = "";
+  double percentage = 0.0;
 
-  ModelCategories( this.uid, this.icon, this.name/*, this.selected, this.valueSpending, this.valueLimit*/ );
-
-  ModelCategories.complete( this.uid, this.icon, this.name /*, this.selected, this.valueSpending, this.valueLimit*/ );
+  ModelCategories( this.uid, this.name, this.selected, this.valueSpending, this.valueLimit, this.percentage );
 
   factory ModelCategories.fromJson(Map<String, dynamic> json) {
     return ModelCategories(
-      json["icon"],
-      json["name"],
       json["uid"],
-      // json["selected"],
-      // json["value_spending"],
-      // json["value_limit"],
+      json["name"],
+      json["selected"],
+      json["value_spending"],
+      json["value_limit"],
+      json["percentage"],
     );
   }
 
   @override
-  String toString() => name!;
+  String toString() => name;
 }

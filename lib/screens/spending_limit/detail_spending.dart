@@ -9,8 +9,8 @@ import 'package:provider/provider.dart';
 
 // import dos modelos
 import 'package:orgalive/screens/widgets/loading_connection.dart';
-import 'package:orgalive/model/core/firebase/model_firebase.dart';
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/firebase/model_firebase.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';

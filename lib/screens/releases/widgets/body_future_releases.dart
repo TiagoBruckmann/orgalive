@@ -11,8 +11,8 @@ import 'package:find_dropdown/find_dropdown.dart';
 import 'package:image_picker/image_picker.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
-import 'package:orgalive/model/functions/accounts/account.dart';
+import 'package:orgalive/core/functions/accounts/account.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 import 'package:orgalive/model/model_categories.dart';
 import 'package:orgalive/model/model_accounts.dart';
 
@@ -314,7 +314,7 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                 );
               },
               onChanged: ( item ) {
-                _category = item!.name!;
+                _category = item!.name;
               },
               dropdownBuilder: (BuildContext context, item) {
                 return Container(
@@ -326,20 +326,13 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                     color: OrgaliveColors.greyBackground,
                   ),
                   child: ListTile(
-                    leading: const CircleAvatar(
-                      backgroundColor: OrgaliveColors.bossanova,
-                      child: Icon(
-                        Icons.home,
-                        color: OrgaliveColors.silver,
-                      ),
-                    ),
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           ( _category.isEmpty )
                           ? "Selecione uma categoria"
-                          : "${item!.name}",
+                          : item!.name,
                           style: const TextStyle(
                             color: OrgaliveColors.whiteSmoke,
                           ),
@@ -369,15 +362,8 @@ class _BodyFutureReleasesState extends State<BodyFutureReleases> {
                     ),
                     child: ListTile(
                       selected: isSelected,
-                      leading: const CircleAvatar(
-                        backgroundColor: OrgaliveColors.bossanova,
-                        child: Icon(
-                          Icons.home,
-                          color: OrgaliveColors.silver,
-                        ),
-                      ),
                       title: Text(
-                        "${item.icon}",
+                        item.name,
                         style: const TextStyle(
                           color: OrgaliveColors.whiteSmoke,
                         ),

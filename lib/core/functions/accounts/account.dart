@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 // import dos modelos
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
-import 'package:orgalive/model/functions/releases/releases.dart';
+import 'package:orgalive/core/functions/releases/releases.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 import 'package:orgalive/model/model_categories.dart';
 import 'package:orgalive/model/model_accounts.dart';
 
@@ -91,14 +91,12 @@ class AccountFunction {
     for ( var item in data.docs ) {
 
       ModelCategories modelCategories = ModelCategories(
-        item["icon"],
-        item["name"],
         item["uid"],
-        /*
-        item["document"],
-        item["default"],
-        item["default"],
-         */
+        item["name"],
+        item["selected"],
+        item["value_spending"],
+        item["value_limit"],
+        item["percentage"],
       );
 
       list.add(modelCategories);

@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
-import 'package:orgalive/model/core/styles/app_gradient.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/styles/app_gradient.dart';
 
 // import dos pacotes
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

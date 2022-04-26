@@ -14,7 +14,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 
 class Home extends StatefulWidget {
 

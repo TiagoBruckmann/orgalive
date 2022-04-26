@@ -2,19 +2,21 @@
 import 'package:flutter/material.dart';
 
 // import dos pacotes
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:find_dropdown/find_dropdown.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/list_icons.dart' as list_icons;
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/functions/shared/shared_functions.dart';
+import 'package:orgalive/core/firebase/model_firebase.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 
 // import das telas
 import 'package:orgalive/screens/widgets/loading_connection.dart';
 import 'package:orgalive/screens/widgets/message_widget.dart';
+import 'package:orgalive/screens/home.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
@@ -35,40 +37,72 @@ class _NewSpendingState extends State<NewSpending> {
   final MoneyMaskedTextController _controllerLimit = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
   final MoneyMaskedTextController _controllerSpending = MoneyMaskedTextController( leftSymbol: 'R\$ ', thousandSeparator: '.', decimalSeparator: ',' );
 
-  // variaveis da tela
-  var _icon;
+  bool _selected = false;
 
   // gerenciadores de estado
   late ConnectionMobx _connectionMobx;
-
-  // buscar as categorias
-  _getCategories() {
-
-  }
 
   // validar gasto / categoria
   _validateSpending() {
 
     if ( _controllerName.text.isEmpty ) {
-
-      CustomSnackBar( context, "Informe o nome da despesa", OrgaliveColors.redDefault );
-
-    } else if ( _icon == null ) {
-
-      CustomSnackBar( context, "Selecione um ícone para a despesa", OrgaliveColors.redDefault );
-
+      CustomSnackBar( context, "Informe o nome da categoria", OrgaliveColors.redDefault );
     } else if ( _controllerLimit.text == "R\$ 0,00" ) {
-
-      CustomSnackBar( context, "Informe um gasto limite mensal para a despesa", OrgaliveColors.redDefault );
-
+      CustomSnackBar( context, "Informe um gasto limite mensal para a categoria", OrgaliveColors.redDefault );
     } else {
       _createSpending();
     }
   }
 
-  // criar gasto / categoria
-  _createSpending() {
+  // criar categoria
+  _createSpending() async {
 
+    final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+    String uid = SharedFunctions().getRandomString(20);
+    String valueLimit = _controllerLimit.text.replaceAll("R\$", "").replaceAll(".", "").replaceAll(",", ".");
+    String valueSpending = _controllerSpending.text.replaceAll("R\$", "").replaceAll(".", "").replaceAll(",", ".");
+
+    double percentage = 0;
+    if ( _controllerSpending.text != "R\$ 0,00" ) {
+      double calc1 = double.parse(valueLimit) - double.parse(valueSpending);
+      percentage = calc1 / double.parse(valueLimit);
+    }
+
+    dynamic data = {
+      "name": _controllerName.text,
+      "percentage": percentage,
+      "selected": _selected,
+      "uid": uid,
+      "value_limit": valueLimit,
+      "value_spending": valueSpending,
+    };
+
+    await _db.collection("categories").doc(uid).set(data)
+      .then((value) {
+
+        CustomSnackBar(context, "Categoria cadastrada com sucesso!", Colors.red);
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (builder) => const Home(
+              selected: 0,
+            ),
+          ),
+          (route) => false,
+        );
+      }).catchError((error) {
+        FirebaseCrashlytics.instance.log(error.toString());
+        CustomSnackBar(context, "Não foi possível cadastrar a categoria.", Colors.red);
+      });
+
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Analytics().sendScreen("new_spending");
   }
 
   @override
@@ -89,7 +123,7 @@ class _NewSpendingState extends State<NewSpending> {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text("Novo gasto"),
+            title: const Text("Nova categoria"),
           ),
 
           body: ( _connectionMobx.connectionStatus.toString() == "ConnectivityResult.none" )
@@ -135,207 +169,6 @@ class _NewSpendingState extends State<NewSpending> {
                   ),
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.only( bottom: 20 ),
-                  child: FindDropdown(
-                    backgroundColor: OrgaliveColors.greyBackground,
-                    items: list_icons.listIcons,
-                    showSearchBox: false,
-                    label: "Selecione uma categoria",
-                    labelStyle: const TextStyle(
-                      color: OrgaliveColors.whiteSmoke,
-                    ),
-                    titleStyle: const TextStyle(
-                      color: OrgaliveColors.whiteSmoke,
-                    ),
-                    errorBuilder: ( context, item ) {
-                      return const Center(
-                        child: Text(
-                          "Nenhum ícone encontrado",
-                          style: TextStyle(
-                            color: OrgaliveColors.whiteSmoke,
-                            fontSize: 15,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      );
-                    },
-                    emptyBuilder: ( item ) {
-                      return const Center(
-                        child: Text(
-                          "Nenhum ícone encontrado",
-                          style: TextStyle(
-                            color: OrgaliveColors.whiteSmoke,
-                            fontSize: 15,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      );
-                    },
-                    onChanged: ( item ) {
-                      setState(() {
-                        _icon = item;
-                      });
-                    },
-                    dropdownBuilder: (BuildContext context, item) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: OrgaliveColors.silver,
-                          ),
-                          borderRadius: BorderRadius.circular(5),
-                          color: OrgaliveColors.greyBackground,
-                        ),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: OrgaliveColors.bossanova,
-                            child: ( item.toString().contains("IconData(U+0F52A)") || item.toString().contains("IconData(U+0F531)") )
-                            ? Icon(
-                              ( item.toString().contains("IconData(U+0F52A)") )
-                              ? list_icons.listIcons[0]
-                              : list_icons.listIcons[1],
-                              color: OrgaliveColors.silver,
-                            )
-                            : FaIcon(
-                              ( !item.toString().contains("IconData(U+0F5DE)") )
-                              ? list_icons.listIcons[2]
-                              : ( !item.toString().contains("IconData(U+0F201)") )
-                              ? list_icons.listIcons[3]
-                              : ( !item.toString().contains("IconData(U+0F6D3)") )
-                              ? list_icons.listIcons[4]
-                              : ( !item.toString().contains("IconData(U+0F44B)") )
-                              ? list_icons.listIcons[5]
-                              : ( !item.toString().contains("IconData(U+0F805)") )
-                              ? list_icons.listIcons[6]
-                              : ( !item.toString().contains("IconData(U+0F549)") )
-                              ? list_icons.listIcons[7]
-                              : ( !item.toString().contains("IconData(U+0F553)") )
-                              ? list_icons.listIcons[8]
-                              : ( !item.toString().contains("IconData(U+0F015)") )
-                              ? list_icons.listIcons[9]
-                              : list_icons.listIcons[10],
-                              color: OrgaliveColors.silver,
-                            ),
-                          ),
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                (item == null)
-                                ? "Selecione uma categoria"
-                                : ( item.toString().contains("IconData(U+0F52A)") )
-                                ? "Mercado"
-                                : ( item.toString().contains("IconData(U+0F531)") )
-                                ? "Viagens"
-                                : ( item.toString().contains("IconData(U+0F5DE)") )
-                                ? "Transporte"
-                                : ( item.toString().contains("IconData(U+0F201)") )
-                                ? "Investimentos"
-                                : ( item.toString().contains("IconData(U+0F6D3)") )
-                                ? "Animais de estimação"
-                                : ( item.toString().contains("IconData(U+0F44B)") )
-                                ? "Academia"
-                                : ( item.toString().contains("IconData(U+0F805)") )
-                                ? "Alimentação"
-                                : ( item.toString().contains("IconData(U+0F549)") )
-                                ? "Estudos"
-                                : ( item.toString().contains("IconData(U+0F553)") )
-                                ? "Vestimentas"
-                                : ( item.toString().contains("IconData(U+0F015)") )
-                                ? "Casa"
-                                : "Hoobies",
-                                style: const TextStyle(
-                                  color: OrgaliveColors.whiteSmoke,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-
-                    // constroi a exibição dos icones
-                    dropdownItemBuilder: ( BuildContext context, item, bool isSelected ) {
-                      return Container(
-                        decoration: !isSelected
-                        ? null
-                        : BoxDecoration(
-                          border: Border.all(
-                            color: Theme.of(context).primaryColor,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                          color: OrgaliveColors.bossanova,
-                        ),
-                        child: Card(
-                          color: OrgaliveColors.greyDefault,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: ListTile(
-                            selected: isSelected,
-                            leading: CircleAvatar(
-                              backgroundColor: OrgaliveColors.bossanova,
-                              child: ( item.toString().contains("IconData(U+0F52A)") || item.toString().contains("IconData(U+0F531)") )
-                              ? Icon(
-                                ( item.toString().contains("IconData(U+0F52A)") )
-                                ? list_icons.listIcons[0]
-                                : list_icons.listIcons[1],
-                                color: OrgaliveColors.silver,
-                              )
-                              : FaIcon(
-                                ( !item.toString().contains("IconData(U+0F5DE)") )
-                                ? list_icons.listIcons[2]
-                                : ( !item.toString().contains("IconData(U+0F201)") )
-                                ? list_icons.listIcons[3]
-                                : ( !item.toString().contains("IconData(U+0F6D3)") )
-                                ? list_icons.listIcons[4]
-                                : ( !item.toString().contains("IconData(U+0F44B)") )
-                                ? list_icons.listIcons[5]
-                                : ( !item.toString().contains("IconData(U+0F805)") )
-                                ? list_icons.listIcons[6]
-                                : ( !item.toString().contains("IconData(U+0F549)") )
-                                ? list_icons.listIcons[7]
-                                : ( !item.toString().contains("IconData(U+0F553)") )
-                                ? list_icons.listIcons[8]
-                                : ( !item.toString().contains("IconData(U+0F015)") )
-                                ? list_icons.listIcons[9]
-                                : list_icons.listIcons[10],
-                                color: OrgaliveColors.silver,
-                              ),
-                            ),
-                            title: Text(
-                              ( item.toString().contains("IconData(U+0F52A)") )
-                              ? "Mercado"
-                              : ( item.toString().contains("IconData(U+0F531)") )
-                              ? "Viagens"
-                              : ( item.toString().contains("IconData(U+0F5DE)") )
-                              ? "Transporte"
-                              : ( item.toString().contains("IconData(U+0F201)") )
-                              ? "Investimentos"
-                              : ( item.toString().contains("IconData(U+0F6D3)") )
-                              ? "Animais de estimação"
-                              : ( item.toString().contains("IconData(U+0F44B)") )
-                              ? "Academia"
-                              : ( item.toString().contains("IconData(U+0F805)") )
-                              ? "Alimentação"
-                              : ( item.toString().contains("IconData(U+0F549)") )
-                              ? "Estudos"
-                              : ( item.toString().contains("IconData(U+0F553)") )
-                              ? "Vestimentas"
-                              : ( item.toString().contains("IconData(U+0F015)") )
-                              ? "Casa"
-                              : "Hoobies",
-                              style: const TextStyle(
-                                color: OrgaliveColors.whiteSmoke,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
                 // limite de gasto
                 Padding(
                   padding: const EdgeInsets.only( bottom: 20 ),
@@ -349,7 +182,7 @@ class _NewSpendingState extends State<NewSpending> {
                     ),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.fromLTRB(5, 16, 5, 16),
-                      labelText: "Limite gasto",
+                      labelText: "Limite mensal",
                       filled: true,
                       labelStyle: const TextStyle(
                         color: OrgaliveColors.silver,
@@ -408,6 +241,24 @@ class _NewSpendingState extends State<NewSpending> {
                   ),
                 ),
 
+                SwitchListTile(
+                  title: const Text(
+                    "Gasto essencial?",
+                    style: TextStyle(
+                      color: OrgaliveColors.silver,
+                      fontSize: 20,
+                    ),
+                  ),
+                  value: _selected,
+                  activeColor: OrgaliveColors.silver,
+                  tileColor: Theme.of(context).scaffoldBackgroundColor,
+                  onChanged: (value) {
+                    setState(() {
+                      _selected = !_selected;
+                    });
+                  },
+                ),
+
                 Padding(
                   padding: const EdgeInsets.only( top: 25 ),
                   child: ElevatedButton(
@@ -422,7 +273,7 @@ class _NewSpendingState extends State<NewSpending> {
                       _validateSpending();
                     },
                     child: const Text(
-                      "Cadastrar despesa",
+                      "Cadastrar categoria",
                       style: TextStyle(
                         color: OrgaliveColors.whiteSmoke,
                         fontWeight: FontWeight.bold,

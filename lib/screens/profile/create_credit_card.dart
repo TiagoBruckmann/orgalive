@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 
 // import das telas
 import 'package:orgalive/screens/widgets/loading_connection.dart';

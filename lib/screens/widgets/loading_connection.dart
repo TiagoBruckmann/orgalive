@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 // import dos modelos
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 
 class LoadingConnection extends StatefulWidget {
   const LoadingConnection({ Key? key }) : super(key: key);

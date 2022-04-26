@@ -2,16 +2,14 @@
 import 'package:flutter/material.dart';
 
 // import dos pacotes
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:calendar_timeline/calendar_timeline.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/firebase/model_firebase.dart';
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
-import 'package:orgalive/model/functions/releases/releases.dart';
+import 'package:orgalive/core/firebase/model_firebase.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 import 'package:orgalive/model/model_release.dart';
 
 // import das telas
@@ -20,7 +18,8 @@ import 'package:orgalive/screens/widgets/loading_connection.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
-import 'package:orgalive/mobx/releases/release_mobx.dart';
+import 'package:orgalive/blocs/releases/release_bloc.dart';
+import 'package:orgalive/mobx/users/users_mobx.dart';
 
 class Releases extends StatefulWidget {
   const Releases({Key? key}) : super(key: key);
@@ -35,59 +34,15 @@ class _ReleasesState extends State<Releases> {
   final DateTime _currentYear = DateTime.now();
 
   // gerenciadores de estado
-  final ReleaseMobx _releaseMobx = ReleaseMobx();
+  final ReleaseBloc _bloc = ReleaseBloc();
   late ConnectionMobx _connectionMobx;
-
-  // busca dos lancamentos do mes
-  Future<List<ModelRelease>> _getReleases() async {
-
-    final FirebaseFirestore _db = FirebaseFirestore.instance;
-
-    if ( _releaseMobx.userUid.isEmpty ) {
-      FirebaseAuth auth = FirebaseAuth.instance;
-      User? userData = auth.currentUser;
-
-      _releaseMobx.setUserUid(userData!.uid);
-    }
-
-    String month = ReleaseFunction().formatDate(_currentYear.month);
-    String date = "${_currentYear.year}$month";
-
-    if ( _releaseMobx.listReleases.isEmpty && _releaseMobx.isLoading == true ) {
-
-      var data = await _db.collection("releases")
-        .where("user_uid", isEqualTo: _releaseMobx.userUid)
-        .get();
-
-      for ( var item in data.docs ) {
-
-        if ( item["document"].toString().contains(date) ) {
-
-          ModelRelease modelRelease = ModelRelease(
-            item["account_id"],
-            item["category"],
-            ReleaseFunction().formatMonth(item["date"]),
-            item["description"],
-            item["document"],
-            item["status"],
-            item["type"],
-            item["user_uid"],
-            item["value"],
-          );
-
-          _releaseMobx.setNew(modelRelease);
-        }
-      }
-      _releaseMobx.updLoading(false);
-    }
-    return _releaseMobx.listReleases;
-  }
+  late UsersMobx _usersMobx;
 
   // recarregamento da tela
   _refresh() async {
     await Future.delayed(const Duration(seconds: 0, milliseconds: 200));
-    if ( _releaseMobx.isLoading == false ) {
-      _releaseMobx.clear();
+    if ( _bloc.isLoading == false ) {
+      _bloc.clear();
     }
   }
 
@@ -101,6 +56,8 @@ class _ReleasesState extends State<Releases> {
   void didChangeDependencies() async {
     super.didChangeDependencies();
 
+    _usersMobx = Provider.of<UsersMobx>(context);
+    _bloc.getReleases(_usersMobx.userUid);
     _connectionMobx = Provider.of<ConnectionMobx>(context);
 
     await _connectionMobx.verifyConnection();
@@ -124,12 +81,12 @@ class _ReleasesState extends State<Releases> {
             onRefresh: () {
               return _refresh();
             },
-            child: FutureBuilder<List<ModelRelease>>(
-              future: _getReleases(),
+            child: StreamBuilder(
+              stream: _bloc.listen,
               builder: ( context, snapshot ) {
 
                 // verificando conexão
-                if ( _releaseMobx.listReleases.isNotEmpty ) {
+                if ( _bloc.listReleases.isNotEmpty ) {
 
                 } else {
                   if ( snapshot.hasError ) {
@@ -149,9 +106,9 @@ class _ReleasesState extends State<Releases> {
                       color: OrgaliveColors.darkGray,
                     );
 
-                  } else if ( _releaseMobx.listReleases.isEmpty ) {
+                  } else if ( _bloc.listReleases.isEmpty ) {
 
-                    if ( _releaseMobx.isLoading == true ) {
+                    if ( _bloc.isLoading == true ) {
 
                       return const CircularProgressIndicator(
                         color: OrgaliveColors.darkGray,
@@ -170,9 +127,9 @@ class _ReleasesState extends State<Releases> {
 
                     }
 
-                  }  else if ( _releaseMobx.listReleases == [] ) {
+                  }  else if ( _bloc.listReleases == [] ) {
 
-                    if ( _releaseMobx.isLoading == true ) {
+                    if ( _bloc.isLoading == true ) {
 
                       return const CircularProgressIndicator(
                         color: OrgaliveColors.darkGray,
@@ -195,10 +152,10 @@ class _ReleasesState extends State<Releases> {
                 }
 
                 return ListView.builder(
-                  itemCount: _releaseMobx.listReleases.length,
+                  itemCount: _bloc.listReleases.length,
                   itemBuilder: ( context, index ) {
 
-                    ModelRelease modelRelease = _releaseMobx.listReleases[index];
+                    ModelRelease modelRelease = _bloc.listReleases[index];
 
                     return Column(
                       children: [
@@ -208,7 +165,7 @@ class _ReleasesState extends State<Releases> {
                           firstDate: DateTime(2021, 12, 06),
                           lastDate: DateTime(2023, 12, 06),
                           leftMargin: 16,
-                          onDateSelected: (date) => _releaseMobx.filterReleases( date!, context ),
+                          onDateSelected: (date) => _bloc.filterReleases( date!, context ),
                           monthColor: OrgaliveColors.silver,
                           dayColor: OrgaliveColors.bossanova,
                           activeDayColor: OrgaliveColors.silver,
@@ -220,16 +177,22 @@ class _ReleasesState extends State<Releases> {
 
                         // dias de lançamento de valores
                         CardDateWidget(
-                          title: "${modelRelease.date}",
+                          title: modelRelease.date,
                         ),
 
                         // lista da descricao e dos valores
                         ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: OrgaliveColors.greenDefault,
+                          leading: CircleAvatar(
+                            backgroundColor: ( modelRelease.type == "Despesa" )
+                            ? OrgaliveColors.redDefault
+                            : OrgaliveColors.greenDefault,
                             radius: 22,
-                            child: Icon(
-                              Icons.star,
+                            child: FaIcon(
+                              ( modelRelease.type == "Despesa" )
+                              ? FontAwesomeIcons.arrowTrendDown
+                              : ( modelRelease.type == "Lucro" )
+                              ? FontAwesomeIcons.moneyBillTrendUp
+                              : FontAwesomeIcons.moneyBillTransfer,
                               color: OrgaliveColors.whiteSmoke,
                               size: 25,
                             ),
@@ -239,7 +202,7 @@ class _ReleasesState extends State<Releases> {
                             children: [
                               Flexible(
                                 child: Text(
-                                  "${modelRelease.description}",
+                                  modelRelease.description,
                                   style: const TextStyle(
                                     color: OrgaliveColors.whiteSmoke,
                                     fontWeight: FontWeight.w500,
@@ -250,9 +213,9 @@ class _ReleasesState extends State<Releases> {
                               Text(
                                 "R\$ ${modelRelease.value}",
                                 style: TextStyle(
-                                  color: ( modelRelease.type == "Lucro" )
-                                  ? OrgaliveColors.greenDefault
-                                  : OrgaliveColors.redDefault,
+                                  color: ( modelRelease.type == "Despesa" )
+                                  ? OrgaliveColors.redDefault
+                                  : OrgaliveColors.greenDefault,
                                   fontWeight: FontWeight.w500,
                                   fontSize: 18,
                                 ),
@@ -275,9 +238,13 @@ class _ReleasesState extends State<Releases> {
                                   ? "Não recebido"
                                   : ( modelRelease.type == "Lucro" && modelRelease.status == 1 )
                                   ? "Recebido"
-                                  : ( modelRelease.type != "Lucro" && modelRelease.status == 0 )
+                                  : ( modelRelease.type == "Despesa" && modelRelease.status == 0 )
                                   ? "Não pago"
-                                  : "Pago",
+                                  : ( modelRelease.type == "Despesa" && modelRelease.status == 1 )
+                                  ? "Pago"
+                                  : ( modelRelease.type == "Transferência" && modelRelease.status == 0 )
+                                  ? "Não transferido"
+                                  : "Transferido",
                                 style: const TextStyle(
                                   color: OrgaliveColors.bossanova,
                                   fontWeight: FontWeight.w500,

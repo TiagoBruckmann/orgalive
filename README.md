@@ -125,17 +125,3 @@ export PATH="$PATH:`pwd`/flutter/bin"
 // rode flutter doctor para saber a saude do flutter
 flutter doctor
 ```
-
-### :gear: Criar chave do app
-
-```sh
-keytool -genkey -v -keystore D:\AndroidStudioProjects\orgalive\upload-keystore.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload
-
-Senha: sua_senha
-Nome: Tiago Bruckmann
-organização: Orgalive
-Nome da empresa: Orgalive
-Cidade: Concórdia
-UF: Santa Catarina
-Código do pais: SC
-```

@@ -9,13 +9,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 
 // import das telas
 import 'package:orgalive/screens/splash_screen.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
+import 'package:orgalive/mobx/users/users_mobx.dart';
 
 final ThemeData defaultTheme = ThemeData(
   primaryColor: OrgaliveColors.greyDefault,
@@ -50,6 +51,9 @@ Future<void> main() async {
       providers: [
         Provider(
           create: (context) => ConnectionMobx(),
+        ),
+        Provider(
+          create: (context) => UsersMobx(),
         ),
       ],
       child: MaterialApp(

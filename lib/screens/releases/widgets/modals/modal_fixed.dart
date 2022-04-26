@@ -1,6 +1,8 @@
 // imports nativos
 import 'package:flutter/material.dart';
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+
+// import dos modelos
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 
 class ModalFixed extends StatelessWidget {
 

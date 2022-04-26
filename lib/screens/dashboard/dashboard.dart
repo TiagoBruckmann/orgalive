@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 // import dos pacotes
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/firebase/model_firebase.dart';
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/firebase/model_firebase.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/model/model_categories.dart';
 
 // import das telas
 import 'package:orgalive/screens/dashboard/categories_essentials.dart';
@@ -22,6 +22,7 @@ import 'package:orgalive/screens/home.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
+import 'package:orgalive/mobx/users/users_mobx.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -33,55 +34,40 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
 
   // variaveis da tela
-  String _timeOfDay = "Bom dia";
   final int _notifications = 1;
-  String _user = "";
-  String _photo = "";
-  String _userUid = "";
+  final List<ModelCategories> _listCategories = [];
 
   // gerenciadores de estado
   late ConnectionMobx _connectionMobx;
+  late UsersMobx _usersMobx;
 
-  // variaveis do banco
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  // busca das categorias
+  _getCategories() async {
 
-  // busca a hora atual
-  _getInfo() async {
+    final FirebaseFirestore _db = FirebaseFirestore.instance;
+    dynamic data = await _db.collection("categories").get();
 
-    FirebaseAuth auth = FirebaseAuth.instance;
-    User? userData = auth.currentUser;
+    List<ModelCategories> list = [];
 
-    String? displayName;
-    String? photoUrl;
-    if ( userData!.displayName == null ) {
+    for ( dynamic item in data.docs ) {
 
-      var data = await _db.collection("users").where("uid", isEqualTo: userData.uid).get();
+      if ( item["selected"] == true ) {
+        ModelCategories modelCategories = ModelCategories(
+          item["uid"],
+          item["name"],
+          item["selected"],
+          item["value_spending"],
+          item["value_limit"],
+          double.parse(item["percentage"].toString()),
+        );
 
-      for ( var item in data.docs ) {
-        displayName = item["name"];
-        photoUrl = item["photo"];
+        list.add(modelCategories);
       }
-
-    } else {
-      displayName = userData.displayName!;
-      photoUrl = userData.photoURL!;
     }
 
     setState(() {
-      _userUid = userData.uid;
-      _user = displayName!;
-      _photo = photoUrl!;
+      _listCategories.addAll(list);
     });
-
-    final TimeOfDay currentTime = TimeOfDay.now();
-
-    if ( currentTime.hour >= 06 && currentTime.hour < 12 ) {
-      _timeOfDay = "Bom dia";
-    } else if ( currentTime.hour >= 12 && currentTime.hour < 18 ) {
-      _timeOfDay = "Boa tarde";
-    } else {
-      _timeOfDay = "Boa noite";
-    }
   }
 
   // novo limite de gasto
@@ -131,13 +117,16 @@ class _DashboardState extends State<Dashboard> {
   @override
   void initState() {
     super.initState();
-    _getInfo();
     Analytics().sendScreen("Dashboard");
+    _getCategories();
   }
 
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
+
+    _usersMobx = Provider.of<UsersMobx>(context);
+    _usersMobx.getInfo();
 
     _connectionMobx = Provider.of<ConnectionMobx>(context);
 
@@ -154,10 +143,10 @@ class _DashboardState extends State<Dashboard> {
         return Scaffold(
           appBar: AppBarWidget(
             context: context,
-            userUid: _userUid,
-            user: _user,
-            photo: _photo,
-            timeOfDay: _timeOfDay,
+            userUid: _usersMobx.userUid,
+            user: _usersMobx.user,
+            photo: _usersMobx.photo,
+            timeOfDay: _usersMobx.timeOfDay,
             notifications: _notifications,
           ),
 
@@ -222,101 +211,55 @@ class _DashboardState extends State<Dashboard> {
                           ],
                         ),
 
-                        // nome do gasto
-                        ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: OrgaliveColors.darkGray,
-                            radius: 20,
-                            child: Icon(
-                              Icons.home,
-                              color: OrgaliveColors.bossanova,
-                              size: 25,
-                            ),
-                          ),
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
+                        for ( int i = 0; i < _listCategories.length; i++ )
+                          Column(
+                            children: [
 
                               // nome do gasto
-                              Text(
-                                "Casa",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
+                              ListTile(
+                                title: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+
+                                    // nome do gasto
+                                    Text(
+                                      _listCategories[i].name,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+
+                                    // valor estimado
+                                    Text(
+                                      "R\$ ${_listCategories[i].valueLimit}",
+                                      style: const TextStyle(
+                                        color: OrgaliveColors.silver,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+
+                                  ],
+                                ),
+                                subtitle: LinearProgressIndicator(
+                                  backgroundColor: OrgaliveColors.silver,
+                                  color: OrgaliveColors.fuchsia,
+                                  value: _listCategories[i].percentage,
                                 ),
                               ),
 
-                              // valor estimado
-                              Text(
-                                "R\$ 300,00",
-                                style: TextStyle(
-                                  color: OrgaliveColors.silver,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                ),
+                              const Divider(
+                                color: OrgaliveColors.bossanova,
+                                thickness: 2,
+                                height: 10,
+                                indent: 16,
+                                endIndent: 16,
                               ),
 
                             ],
                           ),
-                          subtitle: const LinearProgressIndicator(
-                            backgroundColor: OrgaliveColors.silver,
-                            color: OrgaliveColors.fuchsia,
-                            value: 1,
-                          ),
-                        ),
-
-                        const Divider(
-                          color: OrgaliveColors.bossanova,
-                          thickness: 2,
-                          height: 10,
-                          indent: 16,
-                          endIndent: 16,
-                        ),
-
-                        // nome do gasto
-                        ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: OrgaliveColors.darkGray,
-                            radius: 20,
-                            child: FaIcon(
-                              FontAwesomeIcons.carRear,
-                              color: OrgaliveColors.bossanova,
-                              size: 25,
-                            ),
-                          ),
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-
-                              // nome do gasto
-                              Text(
-                                "Transporte",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                ),
-                              ),
-
-                              // valor estimado
-                              Text(
-                                "R\$ 50,00",
-                                style: TextStyle(
-                                  color: OrgaliveColors.silver,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                ),
-                              ),
-
-                            ],
-                          ),
-                          subtitle: const LinearProgressIndicator(
-                            backgroundColor: OrgaliveColors.silver,
-                            color: OrgaliveColors.fuchsia,
-                            value: 0.5,
-                          ),
-                        ),
 
                       ],
                     ),

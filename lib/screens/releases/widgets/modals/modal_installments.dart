@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 
 class ModalInstallments extends StatelessWidget {
 

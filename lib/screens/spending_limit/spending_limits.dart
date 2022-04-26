@@ -4,14 +4,12 @@ import 'dart:async';
 
 // import dos pacotes
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/firebase/model_firebase.dart';
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/firebase/model_firebase.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 import 'package:orgalive/model/model_categories.dart';
 
 // import das telas
@@ -21,6 +19,8 @@ import 'package:orgalive/screens/widgets/loading_connection.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
+import 'package:orgalive/blocs/spendings/spending_blocs.dart';
+import 'package:orgalive/mobx/users/users_mobx.dart';
 
 class SpendingLimits extends StatefulWidget {
   const SpendingLimits({ Key? key }) : super(key: key);
@@ -31,67 +31,17 @@ class SpendingLimits extends StatefulWidget {
 
 class _SpendingLimitsState extends State<SpendingLimits> {
 
-  // variaveis da tela
-  final List<ModelCategories> _listCategories = [];
-  bool _isLoading =  true;
-  String _userUid = "";
-
-  // variaveis do banco
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-
   // gerenciadores de estado
+  final SpendingBloc _bloc = SpendingBloc();
   late ConnectionMobx _connectionMobx;
-
-  // buscar informacoes
-  _getInfos() {
-
-    FirebaseAuth auth = FirebaseAuth.instance;
-    User? userData = auth.currentUser;
-
-    _userUid = userData!.uid;
-  }
-
-  // buscar categorias
-  Future<List<ModelCategories>> _getCategories() async {
-
-    if ( _listCategories.isEmpty && _isLoading == true ) {
-
-      var data = await _db.collection("categories")
-          .get();
-
-      List<ModelCategories> list = [];
-
-      for ( var item in data.docs ) {
-
-        ModelCategories modelCategories = ModelCategories(
-          item["uid"],
-          item["icon"],
-          item["name"],
-          /*
-          item["selected"],
-          item["value_spending"],
-          item["value_limit"],
-          */
-        );
-
-        list.add(modelCategories);
-      }
-
-      setState(() {
-        _listCategories.addAll(list);
-        _isLoading = false;
-      });
-
-    }
-
-    return _listCategories;
-  }
+  late UsersMobx _usersMobx;
 
   // forca o recarregamento ao voltar para essa tela
   FutureOr _onGoBack( dynamic value ) {
     setState(() {
       _refresh();
     });
+    _bloc.getCategories();
   }
 
   // novo limite
@@ -101,7 +51,7 @@ class _SpendingLimitsState extends State<SpendingLimits> {
       context,
       MaterialPageRoute(
         builder: (builder) => NewSpending(
-          userUid: _userUid,
+          userUid: _usersMobx.userUid,
         ),
       ),
     ).then(_onGoBack);
@@ -113,8 +63,8 @@ class _SpendingLimitsState extends State<SpendingLimits> {
       context,
       MaterialPageRoute(
         builder: (builder) => DetailSpending(
-          id: modelCategories.uid!,
-          name: modelCategories.name!,
+          id: modelCategories.uid,
+          name: modelCategories.name,
         ),
       ),
     );
@@ -125,13 +75,8 @@ class _SpendingLimitsState extends State<SpendingLimits> {
 
     await Future.delayed(const Duration(seconds: 0, milliseconds: 200));
 
-    if ( _isLoading == false ) {
-
-      setState(() {
-        _isLoading = true;
-        _listCategories.clear();
-      });
-
+    if ( _bloc.isLoading == false ) {
+      _bloc.clear();
     }
   }
 
@@ -139,18 +84,25 @@ class _SpendingLimitsState extends State<SpendingLimits> {
   void initState() {
     super.initState();
     Analytics().sendScreen("spending-limits");
-    _getInfos();
+    _bloc.getCategories();
   }
 
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
 
+    _usersMobx = Provider.of<UsersMobx>(context);
     _connectionMobx = Provider.of<ConnectionMobx>(context);
 
     await _connectionMobx.verifyConnection();
     _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
 
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _bloc.closeStream();
   }
 
   @override
@@ -184,12 +136,12 @@ class _SpendingLimitsState extends State<SpendingLimits> {
             onRefresh: () {
               return _refresh();
             },
-            child: FutureBuilder<List<ModelCategories>>(
-              future: _getCategories(),
+            child: StreamBuilder(
+              stream: _bloc.listen,
               builder: ( context, snapshot ) {
 
                 // verificando conexão
-                if ( _listCategories.isNotEmpty ) {
+                if ( _bloc.listCategories.isNotEmpty ) {
 
                 } else {
                   if ( snapshot.hasError ) {
@@ -209,9 +161,9 @@ class _SpendingLimitsState extends State<SpendingLimits> {
                       color: OrgaliveColors.darkGray,
                     );
 
-                  } else if ( _listCategories.isEmpty ) {
+                  } else if ( _bloc.listCategories.isEmpty ) {
 
-                    if ( _isLoading == true ) {
+                    if ( _bloc.isLoading == true ) {
 
                       return const CircularProgressIndicator(
                         color: OrgaliveColors.darkGray,
@@ -230,9 +182,9 @@ class _SpendingLimitsState extends State<SpendingLimits> {
 
                     }
 
-                  }  else if ( _listCategories == [] ) {
+                  }  else if ( _bloc.listCategories == [] ) {
 
-                    if ( _isLoading == true ) {
+                    if ( _bloc.isLoading == true ) {
 
                       return const CircularProgressIndicator(
                         color: OrgaliveColors.darkGray,
@@ -255,10 +207,10 @@ class _SpendingLimitsState extends State<SpendingLimits> {
                 }
 
                 return ListView.builder(
-                  itemCount: _listCategories.length,
+                  itemCount: _bloc.listCategories.length,
                   itemBuilder: ( context, index ) {
 
-                    ModelCategories modelCategories = _listCategories[index];
+                    ModelCategories modelCategories = _bloc.listCategories[index];
 
                     return Container(
                       padding: const EdgeInsets.fromLTRB(2, 10, 2, 0),
@@ -282,17 +234,8 @@ class _SpendingLimitsState extends State<SpendingLimits> {
 
                                       // categoria
                                       ListTile(
-                                        leading: const CircleAvatar(
-                                          backgroundColor: OrgaliveColors.darkGray,
-                                          radius: 17,
-                                          child: FaIcon(
-                                            FontAwesomeIcons.house,
-                                            color: OrgaliveColors.bossanova,
-                                            size: 14,
-                                          ),
-                                        ),
-                                        title: Text(
-                                          "${modelCategories.name}",
+                                        leading: Text(
+                                          modelCategories.name,
                                           style: const TextStyle(
                                             color: OrgaliveColors.whiteSmoke,
                                             fontWeight: FontWeight.w500,
@@ -328,22 +271,22 @@ class _SpendingLimitsState extends State<SpendingLimits> {
 
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.start,
-                                        children: const [
+                                        children: [
 
                                           Padding(
-                                            padding: EdgeInsets.symmetric( horizontal: 10, vertical: 10 ),
+                                            padding: const EdgeInsets.symmetric( horizontal: 10, vertical: 10 ),
                                             child: Text.rich(
                                               TextSpan(
-                                                text: "R\$ 0,00",
-                                                style: TextStyle(
+                                                text: "R\$ ${modelCategories.valueSpending}",
+                                                style: const TextStyle(
                                                   color: OrgaliveColors.whiteSmoke,
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 20,
                                                 ),
                                                 children: [
                                                   TextSpan(
-                                                    text: "/R\$ 300,00",
-                                                    style: TextStyle(
+                                                    text: "/R\$ ${modelCategories.valueLimit}",
+                                                    style: const TextStyle(
                                                       color: OrgaliveColors.silver,
                                                       fontWeight: FontWeight.bold,
                                                       fontSize: 14,

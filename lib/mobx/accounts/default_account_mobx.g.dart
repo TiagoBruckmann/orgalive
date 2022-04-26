@@ -9,7 +9,8 @@ part of 'default_account_mobx.dart';
 // ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic
 
 mixin _$DefaultAccountMobx on _DefaultAccountMobx, Store {
-  final _$isLoadingAtom = Atom(name: '_DefaultAccountMobx.isLoading');
+  late final _$isLoadingAtom =
+      Atom(name: '_DefaultAccountMobx.isLoading', context: context);
 
   @override
   bool get isLoading {
@@ -24,7 +25,8 @@ mixin _$DefaultAccountMobx on _DefaultAccountMobx, Store {
     });
   }
 
-  final _$accountIdAtom = Atom(name: '_DefaultAccountMobx.accountId');
+  late final _$accountIdAtom =
+      Atom(name: '_DefaultAccountMobx.accountId', context: context);
 
   @override
   String get accountId {
@@ -39,7 +41,8 @@ mixin _$DefaultAccountMobx on _DefaultAccountMobx, Store {
     });
   }
 
-  final _$accountAtom = Atom(name: '_DefaultAccountMobx.account');
+  late final _$accountAtom =
+      Atom(name: '_DefaultAccountMobx.account', context: context);
 
   @override
   String get account {
@@ -54,7 +57,8 @@ mixin _$DefaultAccountMobx on _DefaultAccountMobx, Store {
     });
   }
 
-  final _$valueAtom = Atom(name: '_DefaultAccountMobx.value');
+  late final _$valueAtom =
+      Atom(name: '_DefaultAccountMobx.value', context: context);
 
   @override
   String get value {
@@ -69,7 +73,8 @@ mixin _$DefaultAccountMobx on _DefaultAccountMobx, Store {
     });
   }
 
-  final _$valueVisibleAtom = Atom(name: '_DefaultAccountMobx.valueVisible');
+  late final _$valueVisibleAtom =
+      Atom(name: '_DefaultAccountMobx.valueVisible', context: context);
 
   @override
   bool get valueVisible {
@@ -84,8 +89,8 @@ mixin _$DefaultAccountMobx on _DefaultAccountMobx, Store {
     });
   }
 
-  final _$_DefaultAccountMobxActionController =
-      ActionController(name: '_DefaultAccountMobx');
+  late final _$_DefaultAccountMobxActionController =
+      ActionController(name: '_DefaultAccountMobx', context: context);
 
   @override
   void setData(dynamic data) {

@@ -10,8 +10,8 @@ import 'package:graphic/graphic.dart';
 import 'package:intl/intl.dart';
 
 // import dos modelos
-import 'package:orgalive/model/core/firebase/model_firebase.dart';
-import 'package:orgalive/model/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/firebase/model_firebase.dart';
+import 'package:orgalive/core/styles/orgalive_colors.dart';
 import 'package:orgalive/screens/reports/data.dart';
 
 // import das telas

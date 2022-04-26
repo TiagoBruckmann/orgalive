@@ -1,18 +1,16 @@
 class ModelRelease {
 
-  String? accountId;
-  String? category;
-  String? date;
-  String? description;
-  String? document;
+  String accountId = "";
+  String? category = "";
+  String date = "";
+  String description = "";
+  String document = "";
   int status = 0;
-  String? type;
-  String? userUid;
-  String? value;
+  String type = "";
+  String userUid = "";
+  String value = "";
 
   ModelRelease( this.accountId, this.category, this.date, this.description, this.document, this.status, this.type, this.userUid, this.value );
-
-  ModelRelease.complete( this.accountId, this.category, this.date, this.description, this.document, this.status, this.type, this.userUid, this.value );
 
   factory ModelRelease.fromJson(Map<String, dynamic> json) {
     return ModelRelease(
@@ -29,5 +27,5 @@ class ModelRelease {
   }
 
   @override
-  String toString() => description!;
+  String toString() => description;
 }
