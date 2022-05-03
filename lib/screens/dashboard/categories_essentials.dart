@@ -46,7 +46,7 @@ class _CategoriesEssentialsState extends State<CategoriesEssentials> {
 
       List<ModelCategories> list = [];
 
-      for ( var item in data.docs ) {
+      for ( dynamic item in data.docs ) {
 
         ModelCategories modelCategories = ModelCategories(
           item["uid"],

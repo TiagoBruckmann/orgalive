@@ -37,9 +37,9 @@ abstract class _UsersMobx with Store {
 
     if ( userData!.displayName == null ) {
 
-      var data = await _db.collection("users").where("uid", isEqualTo: userData.uid).get();
+      dynamic data = await _db.collection("users").where("uid", isEqualTo: userData.uid).get();
 
-      for ( var item in data.docs ) {
+      for ( dynamic item in data.docs ) {
         displayName = item["name"];
         photoUrl = item["photo"];
       }

@@ -1,4 +1,5 @@
 // imports nativos do flutter
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 
 // import dos pacotes
@@ -8,17 +9,15 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
 
 // import dos modelos
+import 'package:orgalive/core/functions/shared/shared_functions.dart';
 import 'package:orgalive/core/firebase/model_firebase.dart';
 import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/routes/shared_routes.dart';
 import 'package:orgalive/model/model_categories.dart';
 
 // import das telas
-import 'package:orgalive/screens/dashboard/categories_essentials.dart';
 import 'package:orgalive/screens/dashboard/widget/app_bar_widget.dart';
 import 'package:orgalive/screens/widgets/loading_connection.dart';
-import 'package:orgalive/screens/dashboard/personalize.dart';
-import 'package:orgalive/screens/dashboard/more_info.dart';
-import 'package:orgalive/screens/home.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
@@ -47,6 +46,25 @@ class _DashboardState extends State<Dashboard> {
     final FirebaseFirestore _db = FirebaseFirestore.instance;
     dynamic data = await _db.collection("categories").get();
 
+    DateTime dateTime = DateTime.now();
+    int lastDay = SharedFunctions().getLastDay();
+
+    if ( dateTime.day == lastDay ) {
+
+      dynamic updateData = {
+        "percentage": 0,
+        "value_spending": "0,00",
+      };
+
+      for ( dynamic item in data.docs ) {
+        await _db.collection("categories").doc(item["uid"]).update(updateData)
+          .onError((error, stackTrace) {
+            FirebaseCrashlytics.instance.log("${error.toString()} => categoria == ${item["name"]} <= uid == ${item["uid"]}");
+          });
+      }
+
+    }
+
     List<ModelCategories> list = [];
 
     for ( dynamic item in data.docs ) {
@@ -68,50 +86,6 @@ class _DashboardState extends State<Dashboard> {
     setState(() {
       _listCategories.addAll(list);
     });
-  }
-
-  // novo limite de gasto
-  _goToNewSpending() {
-    // vai para a tela SpendingLimits()
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => const Home(
-          selected: 4,
-        ),
-      ),
-    );
-  }
-
-  // mais informações
-  _goToMoreInfo() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => const MoreInfo()
-      ),
-    );
-  }
-
-  // categorias
-  _goToCategories() {
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => const CategoriesEssentials(),
-      )
-    );
-  }
-
-  // personalizar a exibição
-  _personalize() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => const Personalize(),
-      ),
-    );
   }
 
   @override
@@ -159,7 +133,7 @@ class _DashboardState extends State<Dashboard> {
 
                 // limite de gastos
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
+                  padding: const EdgeInsets.symmetric( vertical: 5, horizontal: 0 ),
                   child: Card(
                     color: OrgaliveColors.greyDefault,
                     shape: RoundedRectangleBorder(
@@ -186,7 +160,7 @@ class _DashboardState extends State<Dashboard> {
 
                             GestureDetector(
                               onTap: () {
-                                _goToNewSpending();
+                                SharedRoutes().goToSpendings(context);
                               },
                               child: Padding(
                                 padding: const EdgeInsets.only( right: 16, top: 10, ),
@@ -296,7 +270,7 @@ class _DashboardState extends State<Dashboard> {
 
                             GestureDetector(
                               onTap: () {
-                                _goToMoreInfo();
+                                SharedRoutes().goToMoreInfo(context);
                               },
                               child: Padding(
                                 padding: const EdgeInsets.only( right: 16, top: 10, ),
@@ -450,7 +424,7 @@ class _DashboardState extends State<Dashboard> {
                               ),
                             ),
                             onPressed: () {
-                              _goToCategories();
+                              SharedRoutes().goToCategories( context );
                             },
                             child: const Text(
                               "Redefinir categorias essenciais",
@@ -467,9 +441,10 @@ class _DashboardState extends State<Dashboard> {
                   ),
                 ),
 
+                /*
                 GestureDetector(
                   onTap: () {
-                    _personalize();
+                    SharedRoutes().goToPersonalize( context );
                   },
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width - 32,
@@ -492,6 +467,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                   ),
                 ),
+                 */
 
               ],
             ),

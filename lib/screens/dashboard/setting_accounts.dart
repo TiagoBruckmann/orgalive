@@ -21,11 +21,10 @@ import 'package:orgalive/screens/widgets/message_widget.dart';
 // gerenciadores de estado
 import 'package:orgalive/mobx/accounts/default_account_mobx.dart';
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
+import 'package:orgalive/mobx/users/users_mobx.dart';
 
 class SettingAccounts extends StatefulWidget {
-
-  final String userUid;
-  const SettingAccounts({ Key? key, required this.userUid }) : super(key: key);
+  const SettingAccounts({ Key? key }) : super(key: key);
 
   @override
   _SettingAccountsState createState() => _SettingAccountsState();
@@ -38,17 +37,18 @@ class _SettingAccountsState extends State<SettingAccounts> {
 
   // gerenciadores de estado
   final DefaultAccountMobx _defaultAccountMobx = DefaultAccountMobx();
+  late UsersMobx _usersMobx;
   late ConnectionMobx _connectionMobx;
 
   // buscar contas
   Future<List<ModelAccounts>> _getAccounts() async {
 
     if ( _defaultAccountMobx.isLoading == true  ) {
-      var data = await _db.collection("accounts").where("user_uid", isEqualTo: widget.userUid).get();
+      dynamic data = await _db.collection("accounts").where("user_uid", isEqualTo: _usersMobx.userUid).get();
 
       if ( data.docs.length > _defaultAccountMobx.listAccounts.length ) {
 
-        for ( var item in data.docs ) {
+        for ( dynamic item in data.docs ) {
 
           ModelAccounts modelAccounts = ModelAccounts(
             item["user_uid"],
@@ -265,10 +265,10 @@ class _SettingAccountsState extends State<SettingAccounts> {
     } else {
       defaultAccount = false;
     }
-    var data = {
+    dynamic data = {
       "name": name,
       "value": value,
-      "user_uid": widget.userUid,
+      "user_uid": _usersMobx.userUid,
       "document": dateNow,
       "default": defaultAccount,
     };
@@ -449,6 +449,9 @@ class _SettingAccountsState extends State<SettingAccounts> {
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
+
+    _usersMobx = Provider.of<UsersMobx>(context);
+
     _connectionMobx = Provider.of<ConnectionMobx>(context);
     await _connectionMobx.verifyConnection();
     _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);

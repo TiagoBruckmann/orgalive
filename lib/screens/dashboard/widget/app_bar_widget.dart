@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 // import dos modelos
 import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/routes/shared_routes.dart';
 import 'package:orgalive/core/styles/app_gradient.dart';
 
 // import dos pacotes
@@ -10,8 +11,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 // import das telas
 import 'package:orgalive/screens/dashboard/widget/main_settings.dart';
-import 'package:orgalive/screens/profile/notifications.dart';
-import 'package:orgalive/screens/profile/settings.dart';
 
 class AppBarWidget extends PreferredSize {
 
@@ -40,16 +39,7 @@ class AppBarWidget extends PreferredSize {
               child: ListTile(
                 leading: GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (builder) => Settings(
-                          userUid: userUid,
-                          photo: photo,
-                          user: user,
-                        ),
-                      ),
-                    );
+                    SharedRoutes().goToSettings(context, userUid, photo, user);
                   },
                   child: Container(
                     width: 58,
@@ -91,12 +81,7 @@ class AppBarWidget extends PreferredSize {
                     // notificacoes
                     GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (builder) => const Notifications(),
-                          ),
-                        );
+                        SharedRoutes().goToNotifications(context);
                       },
                       child: Card(
                         color: OrgaliveColors.matterhorn,

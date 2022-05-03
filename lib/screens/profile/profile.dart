@@ -70,9 +70,9 @@ class _ProfileState extends State<Profile> {
 
     _uid = userData!.uid;
 
-    var data = await _db.collection("users").where("uid", isEqualTo: _uid).get();
+    dynamic data = await _db.collection("users").where("uid", isEqualTo: _uid).get();
 
-    for ( var item in data.docs ) {
+    for ( dynamic item in data.docs ) {
 
       setState(() {
         _controllerName.text = item["name"];
@@ -88,21 +88,13 @@ class _ProfileState extends State<Profile> {
   _verifyProfile() {
 
     if ( _controllerName.text.isEmpty || _controllerName.text.length < 3 ) {
-
       CustomSnackBar( context, "Preencha um nome válido", OrgaliveColors.redDefault );
-
     } else if ( _controllerMail.text.isEmpty && !_controllerMail.text.contains("@") || !_controllerMail.text.contains(".com") && !_controllerMail.text.contains(".br") ) {
-
       CustomSnackBar( context, "Preencha um e-mail válido", OrgaliveColors.redDefault );
-
     } else if ( _controllerYearBirth.text.isEmpty || _controllerYearBirth.text.length != 10 ) {
-
       CustomSnackBar( context, "Preencha uma data de nascimento válida", OrgaliveColors.redDefault );
-
     } else {
-
       _updateProfile();
-
     }
   }
 
@@ -117,7 +109,7 @@ class _ProfileState extends State<Profile> {
     } else {
       password = _password;
     }
-    var data = {
+    dynamic data = {
       "name": _controllerName.text,
       "mail": _controllerMail.text,
       "year_birth": _controllerYearBirth.text,

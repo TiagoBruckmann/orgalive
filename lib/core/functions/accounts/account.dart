@@ -1,10 +1,10 @@
 // imports nativos do flutter
-import 'package:flutter/material.dart';
 import 'dart:async';
 
 // import dos modelos
 import 'package:orgalive/core/functions/releases/releases.dart';
 import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/routes/shared_routes.dart';
 import 'package:orgalive/model/model_categories.dart';
 import 'package:orgalive/model/model_accounts.dart';
 
@@ -17,7 +17,6 @@ import 'package:intl/intl.dart';
 
 // import das telas
 import 'package:orgalive/screens/widgets/message_widget.dart';
-import 'package:orgalive/screens/home.dart';
 
 class AccountFunction {
 
@@ -60,7 +59,7 @@ class AccountFunction {
 
     List<ModelAccounts> list = [];
 
-    for ( var item in data.docs ) {
+    for ( dynamic item in data.docs ) {
 
       ModelAccounts modelAccounts = ModelAccounts(
         item["user_uid"],
@@ -84,11 +83,11 @@ class AccountFunction {
 
     List<ModelCategories> listCategories = [];
 
-    var data = await _db.collection("categories").get();
+    dynamic data = await _db.collection("categories").get();
 
     List<ModelCategories> list = [];
 
-    for ( var item in data.docs ) {
+    for ( dynamic item in data.docs ) {
 
       ModelCategories modelCategories = ModelCategories(
         item["uid"],
@@ -161,7 +160,7 @@ class AccountFunction {
       status = 1;
     }
 
-    var data = {
+    dynamic data = {
       "user_uid": userUid,
       "document": dateDocument,
       "value": valueFormatted,
@@ -235,7 +234,7 @@ class AccountFunction {
 
         dateSchedule = DateFormat('yyyyMMddkkmmss').format(dateFormatted);
 
-        var dataScheduled = {
+        dynamic dataScheduled = {
           "user_uid": userUid,
           "document": dateSchedule,
           "value": valueFormatted,
@@ -284,7 +283,7 @@ class AccountFunction {
 
         String dateSchedule = DateFormat('yyyyMMddkkmmss').format(dateFormatted);
 
-        var dataScheduled = {
+        dynamic dataScheduled = {
           "user_uid": userUid,
           "document": dateSchedule,
           "value": valueFormatted,
@@ -318,7 +317,7 @@ class AccountFunction {
 
         num originValueParse = num.parse(originValue!.replaceAll(".", "").replaceAll(",", "."));
         String newOriginValue = decrementValue(originValueParse, value);
-        var originData = {
+        dynamic originData = {
           "value": newOriginValue,
         };
 
@@ -327,21 +326,13 @@ class AccountFunction {
 
     }
 
-    var data = {
+    dynamic data = {
       "value": newValue,
     };
 
     _db.collection("accounts").doc(accountId).update(data);
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => const Home(
-          selected: 0,
-        ),
-      ),
-      (route) => false,
-    );
+    SharedRoutes().goToHomeRemoveUntil(context);
 
     CustomSnackBar(
       context,

@@ -1,16 +1,14 @@
 // imports nativos do flutter
 import 'package:flutter/material.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
 
 // import dos modelos
 import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/routes/shared_routes.dart';
 
 // import dos pacotes
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-// import das telas
-import 'package:orgalive/screens/dashboard/setting_accounts.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 
 // injecao de dependencias
 import 'package:orgalive/mobx/accounts/default_account_mobx.dart';
@@ -38,26 +36,13 @@ class _MainSettingsState extends State<MainSettings> {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? userData = auth.currentUser;
 
-    var data = await _db.collection("accounts").where("user_uid", isEqualTo: userData!.uid).get();
-    for ( var item in data.docs ) {
+    dynamic data = await _db.collection("accounts").where("user_uid", isEqualTo: userData!.uid).get();
+    for ( dynamic item in data.docs ) {
 
       if ( item["default"] == true ) {
         _defaultAccountMobx.setData(item);
       }
     }
-  }
-
-  // gerenciar as contas
-  _goToSettingAccounts() {
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => SettingAccounts(
-          userUid: widget.userUid,
-        ),
-      ),
-    );
   }
 
   @override
@@ -205,7 +190,7 @@ class _MainSettingsState extends State<MainSettings> {
                         ),
                       ),
                       onPressed: () {
-                        _goToSettingAccounts();
+                        SharedRoutes().goToSettingAccounts(context);
                       },
                       child: const Text(
                         "Gerenciar contas",

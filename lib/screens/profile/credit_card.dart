@@ -4,26 +4,25 @@ import 'dart:async';
 
 // import dos pacotes
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
 
 // import dos modelos
 import 'package:orgalive/core/firebase/model_firebase.dart';
 import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/routes/shared_routes.dart';
 import 'package:orgalive/model/model_credit_card.dart';
 
 // import das telas
 import 'package:orgalive/screens/widgets/loading_connection.dart';
-import 'package:orgalive/screens/profile/create_credit_card.dart';
 
 // gerenciadores de estado
+import 'package:orgalive/blocs/credit_card/credit_card_bloc.dart';
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
+import 'package:orgalive/mobx/users/users_mobx.dart';
 
 class CreditCard extends StatefulWidget {
-
-  final String userUid;
-  const CreditCard({ Key? key, required this.userUid }) : super(key: key);
+  const CreditCard({ Key? key }) : super(key: key);
 
   @override
   _CreditCardState createState() => _CreditCardState();
@@ -31,81 +30,19 @@ class CreditCard extends StatefulWidget {
 
 class _CreditCardState extends State<CreditCard> {
 
-  // variavies da tela
-  final List<ModelCreditCard> _listCards = [];
-  bool _isLoading =  true;
-
-  // variaveis do banco
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-
   // gerenciadores de estado
+  final CreditCardBloc _bloc = CreditCardBloc();
   late ConnectionMobx _connectionMobx;
-
-  // buscar contas
-  Future<List<ModelCreditCard>> _getCards() async {
-
-    if ( _listCards.isEmpty && _isLoading == true ) {
-
-      var data = await _db.collection("credit_card")
-        .where("user_uid", isEqualTo: widget.userUid)
-        .get();
-
-      List<ModelCreditCard> list = [];
-
-      for ( var item in data.docs ) {
-
-        ModelCreditCard modelCreditCard = ModelCreditCard(
-          item["type"],
-          item["number"],
-          item["valid"],
-          item["cvv"],
-          item["user_uid"],
-          item["document"]
-        );
-
-        list.add(modelCreditCard);
-      }
-
-      setState(() {
-        _listCards.addAll(list);
-        _isLoading = false;
-      });
-
-    }
-
-    return _listCards;
-  }
-
-  _newCreditCard() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => CreateCreditCard(
-          userUid: widget.userUid,
-        ),
-      ),
-    ).then( _onGoBack );
-  }
-
-  // forca o recarregamento ao voltar para essa tela
-  FutureOr _onGoBack( dynamic value ) {
-    setState(() {
-      _refresh();
-    });
-  }
+  late UsersMobx _usersMobx;
 
   // recarregamento da tela
   _refresh() async {
 
     await Future.delayed(const Duration(seconds: 0, milliseconds: 200));
 
-    if ( _isLoading == false ) {
-
-      setState(() {
-        _isLoading = true;
-        _listCards.clear();
-      });
-
+    if ( _bloc.isLoading == false ) {
+      _bloc.clear();
+      _bloc.getCards(_usersMobx.userUid);
     }
   }
 
@@ -119,11 +56,20 @@ class _CreditCardState extends State<CreditCard> {
   void didChangeDependencies() async {
     super.didChangeDependencies();
 
+    _usersMobx = Provider.of<UsersMobx>(context);
+    _bloc.getCards( _usersMobx.userUid );
+
     _connectionMobx = Provider.of<ConnectionMobx>(context);
 
     await _connectionMobx.verifyConnection();
     _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
 
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _bloc.closeStream();
   }
 
   @override
@@ -142,7 +88,7 @@ class _CreditCardState extends State<CreditCard> {
                 // novo cartao
                 GestureDetector(
                   onTap: () {
-                    _newCreditCard();
+                    SharedRoutes().goToNewCreditCard(context);
                   },
                   child: const FaIcon(
                     FontAwesomeIcons.plus,
@@ -159,12 +105,12 @@ class _CreditCardState extends State<CreditCard> {
             onRefresh: () {
               return _refresh();
             },
-            child: FutureBuilder<List<ModelCreditCard>>(
-              future: _getCards(),
+            child: StreamBuilder(
+              stream: _bloc.listen,
               builder: ( context, snapshot ) {
 
                 // verificando conexão
-                if ( _listCards.isNotEmpty ) {
+                if ( _bloc.listCredits.isNotEmpty ) {
 
                 } else {
                   if ( snapshot.hasError ) {
@@ -184,9 +130,9 @@ class _CreditCardState extends State<CreditCard> {
                       color: OrgaliveColors.darkGray,
                     );
 
-                  } else if ( _listCards.isEmpty ) {
+                  } else if ( _bloc.listCredits.isEmpty ) {
 
-                    if ( _isLoading == true ) {
+                    if ( _bloc.isLoading == true ) {
 
                       return const CircularProgressIndicator(
                         color: OrgaliveColors.darkGray,
@@ -205,9 +151,9 @@ class _CreditCardState extends State<CreditCard> {
 
                     }
 
-                  }  else if ( _listCards == [] ) {
+                  }  else if ( _bloc.listCredits == [] ) {
 
-                    if ( _isLoading == true ) {
+                    if ( _bloc.isLoading == true ) {
 
                       return const CircularProgressIndicator(
                         color: OrgaliveColors.darkGray,
@@ -230,10 +176,10 @@ class _CreditCardState extends State<CreditCard> {
                 }
 
                 return ListView.builder(
-                  itemCount: _listCards.length,
+                  itemCount: _bloc.listCredits.length,
                   itemBuilder: ( context, index ) {
 
-                    ModelCreditCard modelCreditCard = _listCards[index];
+                    ModelCreditCard modelCreditCard = _bloc.listCredits[index];
 
                     return Padding(
                       padding: const EdgeInsets.only( top: 6 ),

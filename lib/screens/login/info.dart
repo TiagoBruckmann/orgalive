@@ -7,10 +7,10 @@ import 'package:provider/provider.dart';
 
 // import dos modelos
 import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/routes/shared_routes.dart';
 
 // import das telas
 import 'package:orgalive/screens/widgets/loading_connection.dart';
-import 'package:orgalive/screens/login/login_options.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
@@ -24,17 +24,6 @@ class Info extends StatelessWidget {
     // gerenciadores de estado
     final _connectionMobx = Provider.of<ConnectionMobx>(context);
     _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
-
-    // ir para o login
-    _goToLoginOptions( int type ) {
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (builder) => LoginOptions(type: type),
-        ),
-      );
-    }
 
     return Observer(
       builder: (builder) {
@@ -86,7 +75,7 @@ class Info extends StatelessWidget {
                           ),
                         ),
                         onPressed: () {
-                          _goToLoginOptions( 1 );
+                          SharedRoutes().goToLoginOptions(context, 1);
                         },
                         child: const Text(
                           "Criar uma conta",
@@ -103,7 +92,7 @@ class Info extends StatelessWidget {
                       padding: const EdgeInsets.symmetric( vertical: 35 ),
                       child: GestureDetector(
                         onTap: () {
-                          _goToLoginOptions( 2 );
+                          SharedRoutes().goToLoginOptions(context, 2);
                         },
                         child: const Text(
                           "Fazer login",

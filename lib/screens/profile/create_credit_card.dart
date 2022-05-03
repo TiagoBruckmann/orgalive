@@ -18,11 +18,10 @@ import 'package:orgalive/screens/widgets/message_widget.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
+import 'package:orgalive/mobx/users/users_mobx.dart';
 
 class CreateCreditCard extends StatefulWidget {
-
-  final String userUid;
-  const CreateCreditCard({ Key? key, required this.userUid }) : super(key: key);
+  const CreateCreditCard({ Key? key }) : super(key: key);
 
   @override
   _CreateCreditCardState createState() => _CreateCreditCardState();
@@ -32,6 +31,7 @@ class _CreateCreditCardState extends State<CreateCreditCard> {
 
   // gerenciadores de estado
   late ConnectionMobx _connectionMobx;
+  late UsersMobx _usersMobx;
 
   // controladores de texto
   final MaskedTextController _controllerCardNumber = MaskedTextController( mask: "0000 **** **** 0000" );
@@ -39,7 +39,7 @@ class _CreateCreditCardState extends State<CreateCreditCard> {
   final MaskedTextController _controllerCvv = MaskedTextController( mask: "000" );
 
   // variaveis da tela
-  var _icon = FontAwesomeIcons.creditCard;
+  dynamic _icon = FontAwesomeIcons.creditCard;
   String _brand = "";
 
   // validar o cartao
@@ -86,12 +86,12 @@ class _CreateCreditCardState extends State<CreateCreditCard> {
     String sufix = _controllerCardNumber.text.substring(15);
     String mask = _controllerCardNumber.text.substring(5, 15).replaceRange(0, 10, "**** ****");
 
-    var data = {
+    dynamic data = {
       "type": _brand,
       "number": "$prefix $mask $sufix",
       "valid": _controllerValid.text,
       "cvv": _controllerCvv.text,
-      "user_uid": widget.userUid,
+      "user_uid": _usersMobx.userUid,
       "document": dateNow
     };
 
@@ -109,6 +109,7 @@ class _CreateCreditCardState extends State<CreateCreditCard> {
   void didChangeDependencies() async {
     super.didChangeDependencies();
 
+    _usersMobx = Provider.of<UsersMobx>(context);
     _connectionMobx = Provider.of<ConnectionMobx>(context);
 
     await _connectionMobx.verifyConnection();

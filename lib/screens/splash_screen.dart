@@ -8,11 +8,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
 // import dos modelos
+import 'package:orgalive/core/routes/shared_routes.dart';
 import 'package:orgalive/core/styles/app_images.dart';
-
-// import das telas
-import 'package:orgalive/screens/login/info.dart';
-import 'home.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
@@ -38,35 +35,14 @@ class _SplashScreenState extends State<SplashScreen> {
 
       if( userData != null ) {
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (builder) => const Home(
-              selected: 0,
-            ),
-          ),
-        );
+        SharedRoutes().goToHomeRemoveUntil(context);
 
       } else {
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (builder) => const Info(),
-          ),
-        );
-
+        SharedRoutes().goToInfo(context);
       }
 
     } else {
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (builder) => const Info(),
-        ),
-      );
-
+      SharedRoutes().goToInfo(context);
     }
   }
 

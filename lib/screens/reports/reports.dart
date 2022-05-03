@@ -11,11 +11,11 @@ import 'package:graphic/graphic.dart';
 // import dos modelos
 import 'package:orgalive/core/firebase/model_firebase.dart';
 import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/routes/shared_routes.dart';
 import 'package:orgalive/screens/reports/data.dart';
 
 // import das telas
 import 'package:orgalive/screens/widgets/loading_connection.dart';
-import 'package:orgalive/screens/reports/detail_reports.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
@@ -43,15 +43,6 @@ class _ReportsState extends State<Reports> {
   // filtrar relatorio
   _filterReport() {
 
-  }
-
-  _goToDetail() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => const DetailReports(),
-      ),
-    );
   }
 
   @override
@@ -353,7 +344,7 @@ class _ReportsState extends State<Reports> {
                           // casa
                           GestureDetector(
                             onTap: () {
-                              _goToDetail();
+                              SharedRoutes().goToDetailReports(context);
                             },
                             child: ListTile(
                               leading: const CircleAvatar(

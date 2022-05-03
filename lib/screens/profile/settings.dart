@@ -9,14 +9,11 @@ import 'package:provider/provider.dart';
 
 // import dos modelos
 import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/routes/shared_routes.dart';
 
 // import das telas
 import 'package:orgalive/screens/profile/widgets/app_bar_profile.dart';
-import 'package:orgalive/screens/dashboard/categories_essentials.dart';
 import 'package:orgalive/screens/widgets/loading_connection.dart';
-import 'package:orgalive/screens/dashboard/setting_accounts.dart';
-import 'package:orgalive/screens/profile/credit_card.dart';
-import 'package:orgalive/screens/login/info.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
@@ -37,63 +34,13 @@ class _SettingsState extends State<Settings> {
   // gerenciadores de estado
   late ConnectionMobx _connectionMobx;
 
-  // contas
-  _goToAccount() {
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => SettingAccounts(
-          userUid: widget.userUid,
-        ),
-      ),
-    );
-
-  }
-
-  // ir para os cartoes de credito
-  _goToCreditCard() {
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => CreditCard(
-          userUid: widget.userUid,
-        ),
-      ),
-    );
-
-  }
-
-  // ir para as categorias
-  _goToCategories() {
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => const CategoriesEssentials(),
-      )
-    );
-
-  }
-
-  // ir para as tags
-  _goToTags() {
-
-  }
-
   // desconectar
   _disconnect() {
 
     FirebaseAuth auth = FirebaseAuth.instance;
     auth.signOut();
+    SharedRoutes().goToInfoRemoveUntil(context);
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => const Info(),
-      ),
-    );
   }
 
   @override
@@ -168,7 +115,7 @@ class _SettingsState extends State<Settings> {
                         // contas
                         GestureDetector(
                           onTap: () {
-                            _goToAccount();
+                            SharedRoutes().goToSettingAccounts(context);
                           },
                           child: const ListTile(
                             leading: FaIcon(
@@ -198,7 +145,7 @@ class _SettingsState extends State<Settings> {
                         // Cartoes de credito
                         GestureDetector(
                           onTap: () {
-                            _goToCreditCard();
+                            SharedRoutes().goToCreditCard(context);
                           },
                           child: const ListTile(
                             leading: FaIcon(
@@ -228,7 +175,7 @@ class _SettingsState extends State<Settings> {
                         // Categorias
                         GestureDetector(
                           onTap: () {
-                            _goToCategories();
+                            SharedRoutes().goToCategories(context);
                           },
                           child: const ListTile(
                             leading: FaIcon(
@@ -258,7 +205,7 @@ class _SettingsState extends State<Settings> {
                         // Categorias
                         GestureDetector(
                           onTap: () {
-                            _goToTags();
+                            SharedRoutes().goToTags( context );
                           },
                           child: const ListTile(
                             leading: FaIcon(

@@ -24,9 +24,9 @@ class SpendingBloc {
 
     if ( _listCategories.isEmpty && isLoading == true ) {
 
-      var data = await _db.collection("categories").get();
+      dynamic data = await _db.collection("categories").get();
 
-      for ( var item in data.docs ) {
+      for ( dynamic item in data.docs ) {
 
         ModelCategories modelCategories = ModelCategories(
           item["uid"],

@@ -109,7 +109,7 @@ class _PersonalizeState extends State<Personalize> {
             onReorder: (int oldIndex, int newIndex) {
               /*
               setState(() {
-                var movedList = widget.groups.removeAt(oldIndex);
+                dynamic movedList = widget.groups.removeAt(oldIndex);
                 widget.groups.insert(newIndex, movedList);
 
                 int order = 1;

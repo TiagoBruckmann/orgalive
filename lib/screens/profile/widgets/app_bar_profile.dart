@@ -3,11 +3,8 @@ import 'package:flutter/material.dart';
 
 // import dos modelos
 import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/routes/shared_routes.dart';
 import 'package:orgalive/core/styles/app_gradient.dart';
-
-// import das telas
-import 'package:orgalive/screens/profile/settings.dart';
-import 'package:orgalive/screens/profile/profile.dart';
 
 class AppBarProfile extends PreferredSize {
 
@@ -34,16 +31,7 @@ class AppBarProfile extends PreferredSize {
               child: ListTile(
                 leading: GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (builder) => Settings(
-                          userUid: userUid,
-                          photo: photo,
-                          user: user,
-                        ),
-                      ),
-                    );
+                    SharedRoutes().goToSettings(context, userUid, photo, user);
                   },
                   child: Container(
                     width: 58,
@@ -78,15 +66,7 @@ class AppBarProfile extends PreferredSize {
                       ),
                     ),
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (builder) => Profile(
-                            photo: photo,
-                            name: user,
-                          ),
-                        ),
-                      );
+                      SharedRoutes().goToProfile(context, photo, user);
                     },
                     child: const Text(
                       "Editar perfil",

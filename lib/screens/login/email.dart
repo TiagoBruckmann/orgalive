@@ -11,12 +11,12 @@ import 'package:provider/provider.dart';
 // import dos modelos
 import 'package:orgalive/core/firebase/model_firebase.dart';
 import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/routes/shared_routes.dart';
 import 'package:orgalive/core/styles/app_images.dart';
 import 'package:orgalive/model/model_users.dart';
 
 // import das telas
 import 'package:orgalive/screens/widgets/loading_connection.dart';
-import 'package:orgalive/screens/home.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
@@ -114,16 +114,7 @@ class _EmailState extends State<Email> {
       );
 
       await db.collection("users").doc(firebaseUser.user!.uid).set(users.toMap());
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (builder) => const Home(
-            selected: 0,
-          ),
-        ),
-            (route) => false,
-      );
+      SharedRoutes().goToHomeRemoveUntil(context);
 
     }).catchError((error) {
 
@@ -145,15 +136,7 @@ class _EmailState extends State<Email> {
       password: users.password!,
     ).then((firebaseUser){
 
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (builder) => const Home(
-            selected: 0,
-          ),
-        ),
-            (route) => false,
-      );
+      SharedRoutes().goToHomeRemoveUntil(context);
 
     }).catchError((error){
 
@@ -189,8 +172,6 @@ class _EmailState extends State<Email> {
 
         return Scaffold(
 
-          appBar: AppBar(),
-
           body: ( _connectionMobx.connectionStatus.toString() == "ConnectivityResult.none" )
           ? const LoadingConnection()
           : Center(
@@ -202,13 +183,13 @@ class _EmailState extends State<Email> {
 
                   // logo
                   Image.asset(
-                    AppImages.logo,
-                    width: 250,
+                    AppImages.logo2,
+                    width: 200,
                   ),
 
                   // email
                   Padding(
-                    padding: const EdgeInsets.only( top: 50, bottom: 8),
+                    padding: const EdgeInsets.only( top: 30, bottom: 8),
                     child: TextField(
                       controller: _controllerMail,
                       keyboardType: TextInputType.text,

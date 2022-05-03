@@ -11,12 +11,11 @@ import 'package:provider/provider.dart';
 
 // import dos modelos
 import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/routes/shared_routes.dart';
 
 // import das telas
 import 'package:orgalive/screens/widgets/loading_connection.dart';
 import 'package:orgalive/screens/widgets/message_widget.dart';
-import 'package:orgalive/screens/login/email.dart';
-import 'package:orgalive/screens/home.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
@@ -61,7 +60,7 @@ class LoginOptions extends StatelessWidget {
             //Salvar dados do usuário
             FirebaseFirestore db = FirebaseFirestore.instance;
 
-            var data = {
+            dynamic data = {
               "uid": user!.uid,
               "photo": user.photoURL,
               "name": user.displayName,
@@ -71,27 +70,11 @@ class LoginOptions extends StatelessWidget {
             };
             await db.collection("users").doc(user.uid).set(data);
 
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (builder) => const Home(
-                  selected: 0,
-                ),
-              ),
-              (route) => false,
-            );
+            SharedRoutes().goToHomeRemoveUntil(context);
 
           } else {
 
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (builder) => const Home(
-                  selected: 0,
-                ),
-              ),
-              (route) => false,
-            );
+            SharedRoutes().goToHomeRemoveUntil(context);
 
           }
 
@@ -127,18 +110,6 @@ class LoginOptions extends StatelessWidget {
 
       return user;
 
-    }
-
-    // logar com email
-    _loginMail() {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (builder) => Email(
-            type: type,
-          ),
-        ),
-      );
     }
 
     return Observer(
@@ -239,7 +210,7 @@ class LoginOptions extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      _loginMail();
+                      SharedRoutes().goToLoginMail( context, type );
                     },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,

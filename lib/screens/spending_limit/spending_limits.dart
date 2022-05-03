@@ -10,17 +10,15 @@ import 'package:provider/provider.dart';
 // import dos modelos
 import 'package:orgalive/core/firebase/model_firebase.dart';
 import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/routes/shared_routes.dart';
 import 'package:orgalive/model/model_categories.dart';
 
 // import das telas
-import 'package:orgalive/screens/spending_limit/detail_spending.dart';
-import 'package:orgalive/screens/spending_limit/new_spending.dart';
 import 'package:orgalive/screens/widgets/loading_connection.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
 import 'package:orgalive/blocs/spendings/spending_blocs.dart';
-import 'package:orgalive/mobx/users/users_mobx.dart';
 
 class SpendingLimits extends StatefulWidget {
   const SpendingLimits({ Key? key }) : super(key: key);
@@ -34,41 +32,6 @@ class _SpendingLimitsState extends State<SpendingLimits> {
   // gerenciadores de estado
   final SpendingBloc _bloc = SpendingBloc();
   late ConnectionMobx _connectionMobx;
-  late UsersMobx _usersMobx;
-
-  // forca o recarregamento ao voltar para essa tela
-  FutureOr _onGoBack( dynamic value ) {
-    setState(() {
-      _refresh();
-    });
-    _bloc.getCategories();
-  }
-
-  // novo limite
-  _newSpending() {
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => NewSpending(
-          userUid: _usersMobx.userUid,
-        ),
-      ),
-    ).then(_onGoBack);
-  }
-
-  // ir para os detalhes
-  _goToDetailSpending( ModelCategories modelCategories ) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => DetailSpending(
-          id: modelCategories.uid,
-          name: modelCategories.name,
-        ),
-      ),
-    );
-  }
 
   // recarregamento da tela
   _refresh() async {
@@ -91,9 +54,7 @@ class _SpendingLimitsState extends State<SpendingLimits> {
   void didChangeDependencies() async {
     super.didChangeDependencies();
 
-    _usersMobx = Provider.of<UsersMobx>(context);
     _connectionMobx = Provider.of<ConnectionMobx>(context);
-
     await _connectionMobx.verifyConnection();
     _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
 
@@ -120,7 +81,7 @@ class _SpendingLimitsState extends State<SpendingLimits> {
 
                 GestureDetector(
                   onTap: () {
-                    _newSpending();
+                    SharedRoutes().goToNewSpending(context);
                   },
                   child: const FaIcon(
                     FontAwesomeIcons.plus,
@@ -220,7 +181,7 @@ class _SpendingLimitsState extends State<SpendingLimits> {
                           Expanded(
                             child: GestureDetector(
                               onTap: () {
-                                _goToDetailSpending( modelCategories );
+                                SharedRoutes().goToDetailSpending(context, modelCategories);
                               },
                               child: Card(
                                 color: OrgaliveColors.greyDefault,

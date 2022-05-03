@@ -34,11 +34,11 @@ class ReleaseBloc {
 
     if ( listReleases.isEmpty && isLoading == true ) {
 
-      var data = await _db.collection("releases")
+      dynamic data = await _db.collection("releases")
           .where("user_uid", isEqualTo: userUid)
           .get();
 
-      for ( var item in data.docs ) {
+      for ( dynamic item in data.docs ) {
 
         if ( item["document"].toString().contains(date) ) {
 

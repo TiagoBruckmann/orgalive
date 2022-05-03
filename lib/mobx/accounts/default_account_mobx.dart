@@ -30,7 +30,7 @@ abstract class _DefaultAccountMobx with Store {
   bool valueVisible = false;
 
   @action
-  void setData( var data ) {
+  void setData( dynamic data ) {
     accountId = data["document"];
     account = data["name"];
     value = data["value"];
@@ -43,7 +43,7 @@ abstract class _DefaultAccountMobx with Store {
     // variaveis do banco
     final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-    var data = {
+    dynamic data = {
       "value_visible": valueVisible = !valueVisible,
     };
 
@@ -54,8 +54,8 @@ abstract class _DefaultAccountMobx with Store {
   void updLoading( bool value ) => isLoading = value;
 
   @action
-  void updateVale( String newValue, String document, var _db, context ) {
-    var data = {
+  void updateVale( String newValue, String document, dynamic _db, context ) {
+    dynamic data = {
       "value": newValue,
     };
     _db.collection("accounts").doc(document).update(data);

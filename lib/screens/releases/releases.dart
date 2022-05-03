@@ -66,6 +66,12 @@ class _ReleasesState extends State<Releases> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _bloc.closeStream();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Observer(
       builder: (builder) {

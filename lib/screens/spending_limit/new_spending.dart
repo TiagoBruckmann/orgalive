@@ -12,19 +12,17 @@ import 'package:provider/provider.dart';
 import 'package:orgalive/core/functions/shared/shared_functions.dart';
 import 'package:orgalive/core/firebase/model_firebase.dart';
 import 'package:orgalive/core/styles/orgalive_colors.dart';
+import 'package:orgalive/core/routes/shared_routes.dart';
 
 // import das telas
 import 'package:orgalive/screens/widgets/loading_connection.dart';
 import 'package:orgalive/screens/widgets/message_widget.dart';
-import 'package:orgalive/screens/home.dart';
 
 // gerenciadores de estado
 import 'package:orgalive/mobx/connection/connection_mobx.dart';
 
 class NewSpending extends StatefulWidget {
-
-  final String userUid;
-  const NewSpending({ Key? key, required this.userUid }) : super(key: key);
+  const NewSpending({ Key? key }) : super(key: key);
 
   @override
   _NewSpendingState createState() => _NewSpendingState();
@@ -82,16 +80,8 @@ class _NewSpendingState extends State<NewSpending> {
       .then((value) {
 
         CustomSnackBar(context, "Categoria cadastrada com sucesso!", Colors.red);
+        SharedRoutes().goToHomeRemoveUntil(context);
 
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (builder) => const Home(
-              selected: 0,
-            ),
-          ),
-          (route) => false,
-        );
       }).catchError((error) {
         FirebaseCrashlytics.instance.log(error.toString());
         CustomSnackBar(context, "Não foi possível cadastrar a categoria.", Colors.red);
@@ -110,7 +100,6 @@ class _NewSpendingState extends State<NewSpending> {
     super.didChangeDependencies();
 
     _connectionMobx = Provider.of<ConnectionMobx>(context);
-
     await _connectionMobx.verifyConnection();
     _connectionMobx.connectivity.onConnectivityChanged.listen(_connectionMobx.updateConnectionStatus);
 
